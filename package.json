@@ -4,13 +4,22 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src tests"
+    "lint": "eslint src "
   },
-  "keywords": ["big numbers","Math","Bigint","Bigdecimal","Operations","decimal node","Mango.io"],
+  "keywords": [
+    "big numbers",
+    "Math",
+    "Bigint",
+    "Bigdecimal",
+    "Operations",
+    "decimal node",
+    "Mango.io"
+  ],
   "author": "JossDev",
   "license": "GNU GPLv3",
   "description": "Tool to handle big numbers in javascript and have access to mathematical operations with these numbers.",
   "devDependencies": {
-    "eslint": "^8.45.0"
+    "eslint": "^8.45.0",
+    "eslint-plugin-jsdoc": "^46.4.4"
   }
 }
