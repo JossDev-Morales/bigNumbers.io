@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src tests"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["big numbers","Math","Bigint","Bigdecimal","Operations","decimal node","Mango.io"],
+  "author": "JossDev",
+  "license": "GNU GPLv3",
+  "description": "Tool to handle big numbers in javascript and have access to mathematical operations with these numbers.",
   "devDependencies": {
     "eslint": "^8.45.0"
   }
