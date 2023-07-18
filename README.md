@@ -21,4 +21,4 @@ To be able to represent integers you will need the BigInteger class and for deci
 - Return
 - GetRecord
 - ClearRecord
-- Set/[BigInteger /]/[BigDecimal /]
+- Set/[BigInteger/]/[BigDecimal/]
