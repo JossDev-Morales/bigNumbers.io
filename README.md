@@ -48,9 +48,9 @@ To know when you should use each one, we must first differentiate them, in the c
 
 Now, you have to know how both classes behave and what problems they have
 
-**BigInteger-** The class that handles integers by working only with integers, uses fewer resources, it is based on the native BigInt class to work with arithmetic operations, therefore it is fast and accurate.
+- **`BigInteger`** The class that handles integers by working only with integers, uses fewer resources, it is based on the native BigInt class to work with arithmetic operations, therefore it is fast and accurate.
 
-**BigDecimal-** The class that handles decimals can also receive integers, it is based on operations with strings, so it can be very precise although it is less fast, the difference exists but it is not very noticeable.
+- **`BigDecimal`** The class that handles decimals can also receive integers, it is based on operations with strings, so it can be very precise although it is less fast, the difference exists but it is not very noticeable.
 
 With this in mind, we can say that there are **2** use cases for BigIntegers and **4** use cases for BigDecimals.
 
