@@ -4,6 +4,7 @@ const CustomError = require("./CustomError")
  * Function to know if a number like a string is a valid representation of a number for BigDecimal
  * @param {string} number 
  * @throws {error} the error corresponding to the failure in the validation of the number
+ * @returns {boolean} true if the string as a number is a valid value or throws an error
  */
 function isValidNumber(number) {
     //We validate that the number is a string
@@ -48,5 +49,6 @@ function isValidNumber(number) {
             })
         }
     }
+    return true
 }
 module.exports = isValidNumber
