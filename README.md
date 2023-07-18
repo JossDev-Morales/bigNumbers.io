@@ -119,7 +119,7 @@ multiplies two numbers, the number corresponding to the `current value` by the n
 `this` object
 
 ### Division
---
+---
 
 #### Parameters:
 - `number` like `String` or `Number`
@@ -131,5 +131,40 @@ divides the number corresponding to the `current value` by the number you pass a
 #### Return:
 `this` object
 
+### Return
+---
 
+#### Description:
+returns the `current value` as a string representation
 
+#### Return:
+`current value` as a `string`
+
+### GetRecord
+---
+
+#### Description:
+a log of all operations since the previous `record` reset
+
+#### Return:
+`record` as an `object`
+
+### ClearRecord
+---
+
+#### Description:
+resets the `record` of operations so far
+
+#### Return:
+`undefined`
+
+### Set-CurrentObject
+---
+- BigDecimal
+- BigIneger
+
+#### Description:
+set the current value with the number you pass as a parameter
+
+#### Return:
+`undefined`
