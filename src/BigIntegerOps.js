@@ -17,7 +17,7 @@ class bigInteger {
      */
     constructor(initilizedValue) {
         if (String(initilizedValue).split('.')[1]) {
-            throw new Error(`The number ${initilizedResult} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+            throw new Error(`The number ${initilizedValue} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
         this.#result = BigInt(initilizedValue || 0)
         this.#record = {
@@ -39,7 +39,7 @@ class bigInteger {
         this.#result = this.#result + BigInt(number);
         this.#record.operations.push({ type: 'Addition', from, adding: number, result: this.#result })
         return this;
-    };
+    }
     /**
      * 
      * @param {string|number} number
@@ -66,7 +66,7 @@ class bigInteger {
         this.#result = this.#result - BigInt(number)
         this.#record.operations.push({ type: 'Subtraction', from, substracting: number, result: this.#result })
         return this;
-    };
+    }
     /**
      * 
      * @param {string|number} number
