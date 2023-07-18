@@ -7,18 +7,18 @@ To be able to represent integers you will need the BigInteger class and for deci
 
 #### **Arithmetic methods**
 
--Addition 
--ReturnAddition
--Subtraction
--ReturnSubtraction
--Multiplication
--ReturnMultiplication
--Division
--ReturnDivision
+- Addition 
+- ReturnAddition
+- Subtraction
+- ReturnSubtraction
+- Multiplication
+- ReturnMultiplication
+- Division
+- ReturnDivision
 
 #### **Non-arithmetic methods**
 
--Return
--GetRecord
--ClearRecord
--Set/[BigInteger /]/[BigDecimal /]
+- Return
+- GetRecord
+- ClearRecord
+- Set/[BigInteger /]/[BigDecimal /]
