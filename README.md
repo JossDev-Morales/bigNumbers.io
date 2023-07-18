@@ -43,8 +43,8 @@ then, we know how tu use this classes, the next step is to know when to use each
 
 To know when you should use each one, we must first differentiate them, in the case of BigIntegers, this represents integers that exceed the javascript limit, in the case of BigDecimal, this represents decimals that cannot be represented in javascript, therefore the main difference is the type of number
 
-**BigInteger** integers
-**BigDecimal** decimals
+- **BigInteger** integers
+- **BigDecimal** decimals
 
 Now, you have to know how both classes behave and what problems they have
 
@@ -54,11 +54,11 @@ Now, you have to know how both classes behave and what problems they have
 
 With this in mind, we can say that there are **2** use cases for BigIntegers and **4** use cases for BigDecimals.
 
-for BigInteger:
+for `BigInteger`:
 - when you have an integer representable in javascript
 - when you have an integer not representable in javascript that exceeds its safe limit
 ---
-for BigDecimal:
+for `BigDecimal`:
 - when you have an integer representable in javascript
 - when you have an integer not representable in javascript that exceeds its safe limit
 - when you have a decimal number representable in javascript
@@ -68,7 +68,68 @@ for BigDecimal:
 
 The answer is nah, of course not, generally when you need to represent a number with *BigInteger*, you really expect it to be a **big integer**, if you really expect an integer that is possible to represent with javascript, you should use **"Number"** natively in javascript, therefore this also applies to *BigDecimal* numbers, even though it accepts integers, you should not use it for that, as it is slower compared to BigInteger, also if you expect a decimal representable in javascript, you should use the native **"Number"** from javascript.
 
+## Quick Start
+---
 
+The arithmetic methods `Add`, `Subtract`, `Multiplication` and `Division` have a counterpart **"Return"**, which basically derives from the arithmetic method, does not save the result in the object and does not create a record of the operation either, the result of the operation is returned, once this brief explanation is given, let's continue.
+
+Example of Return arithmetic methods:
+```js
+    // this dont change the current value of your BigInteger
+    const MyBigIntegerNumber = new BigInteger('1999999999999999999999').ReturnAddition('1') 
+    console.log(MyBigIntegerNumber.Return())// 1999999999999999999999
+        // but return de result directly
+    console.log(MyBigIntegerNumber.ReturnAddition('1'))// 2000000000000000000000
+```
+
+### Addition 
+---
+
+#### Parameters: 
+- `number` like `String` or `Number`
+
+#### Description: 
+adds two numbers, the number corresponding to the `current value` plus the one you pass as a parameter to this method and sets the result of the operation as the `current value`.
+
+#### Return:
+`this` object
+
+### Subtraction
+---
+
+#### Parameters:
+- `number` like `String` or `Number`
+
+#### Description:
+subtracts two numbers, the number corresponding to the `current value` minus the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
+
+#### Return:
+`this` object
+
+### Mulptiplication
+---
+
+#### Parameters:
+- `number` like `String` or `Number`
+
+#### Description:
+multiplies two numbers, the number corresponding to the `current value` by the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
+
+#### Return:
+`this` object
+
+### Division
+--
+
+#### Parameters:
+- `number` like `String` or `Number`
+
+#### Description:
+divides the number corresponding to the `current value` by the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
+
+
+#### Return:
+`this` object
 
 
 
