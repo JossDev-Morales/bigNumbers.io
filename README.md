@@ -52,7 +52,7 @@ Now, you have to know how both classes behave and what problems they have
 
 - **`BigDecimal`** The class that handles decimals can also receive integers, it is based on operations with strings, so it can be very precise although it is less fast, the difference exists but it is not very noticeable.
 
-With this in mind, we can say that there are **2** use cases for BigIntegers and **4** use cases for BigDecimals.
+With this in mind, we can say that there are **`2`** use cases for BigIntegers and **`4`** use cases for BigDecimals.
 
 for `BigInteger`:
 - when you have an integer representable in javascript
