@@ -78,7 +78,7 @@ Example of Return arithmetic methods:
     // this dont change the current value of your BigInteger
     const MyBigIntegerNumber = new BigInteger('1999999999999999999999').ReturnAddition('1') 
     console.log(MyBigIntegerNumber.Return())// 1999999999999999999999
-        // but return de result directly
+        // but return the result directly
     console.log(MyBigIntegerNumber.ReturnAddition('1'))// 2000000000000000000000
 ```
 
@@ -161,10 +161,27 @@ resets the `record` of operations so far
 ### Set-CurrentObject
 ---
 - BigDecimal
-- BigIneger
+- BigInteger
 
 #### Description:
 set the current value with the number you pass as a parameter
 
 #### Return:
 `undefined`
+
+## IsValidNumber
+as a plus, you got a function which lets you know if a number as a string is a valid representation, this same functionality is built into the class BigDecimal, feel free to use it to check if a number is valid to be used.
+
+### This functionality validates the following points:
+
+- validates that the number is a string.
+- validates that a number does not have a negative input sign.
+- validates that the decimals are not greater than one decimal, this is the maximum number of decimals allowed.
+- validates that it does not have rare characters in the string for decimal numbers.
+- validates that it does not have rare characters in the string for non-decimal numbers.
+
+#### Throws:
+An `error` for each validation
+
+#### Return: 
+`boolean` True if it's a valid number
