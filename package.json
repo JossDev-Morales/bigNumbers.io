@@ -1,22 +1,31 @@
 {
-  "name": "bignumbers",
-  "version": "1.0.0",
+  "name": "bignumbers.io",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src "
   },
   "keywords": [
+    "big",
+    "ints",
+    "decimals",
+    "arithmetic",
     "big numbers",
+    "big-numbers",
+    "bignumber",
+    "bigdecimal",
+    "big decimals",
     "Math",
     "Bigint",
     "Bigdecimal",
     "Operations",
     "decimal node",
+    "big ints",
     "Mango.io"
   ],
   "author": "JossDev",
-  "license": "GNU GPLv3",
+  "license": "MIT",
   "description": "Tool to handle big numbers in javascript and have access to mathematical operations with these numbers.",
   "devDependencies": {
     "eslint": "^8.45.0",
