@@ -50,7 +50,7 @@ class bigInteger {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return this.#result + BigInt(number);
+        return BigInt(this.#result + BigInt(number)).toString()
     }
     /**
      * 
@@ -77,7 +77,7 @@ class bigInteger {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return this.#result - BigInt(number)
+        return BigInt(this.#result - BigInt(number)).toString()
     }
     /**
      * 
@@ -103,7 +103,7 @@ class bigInteger {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return this.#result * BigInt(number)
+        return BigInt(this.#result * BigInt(number)).toString()
     }
     /**
      * 
@@ -129,7 +129,7 @@ class bigInteger {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return BigInt(this.#result / BigInt(number))
+        return BigInt(this.#result / BigInt(number)).toString()
     }
     /**
      * @method Return 
