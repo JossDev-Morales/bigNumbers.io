@@ -1,9 +1,9 @@
 {
   "name": "bignumbers.io",
-  "version": "1.0.2",
-  "main": "index.js",
+  "version": "1.0.0",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "eslint src "
   },
   "keywords": [
@@ -28,7 +28,16 @@
   "license": "MIT",
   "description": "Tool to handle big numbers in javascript and have access to mathematical operations with these numbers.",
   "devDependencies": {
+    "@babel/cli": "^7.22.9",
+    "@babel/core": "^7.22.9",
+    "@babel/plugin-transform-modules-commonjs": "^7.22.5",
+    "@babel/preset-env": "^7.22.9",
     "eslint": "^8.45.0",
-    "eslint-plugin-jsdoc": "^46.4.4"
+    "eslint-plugin-jsdoc": "^46.4.4",
+    "jest": "^29.6.1"
+  },
+  "repository": {
+    "url": "https://github.com/JossDev-Morales/BigNumbers.io",
+    "type": "github"
   }
 }
