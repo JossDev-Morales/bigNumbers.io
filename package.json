@@ -1,5 +1,5 @@
 {
-  "name": "bignumbers.io",
+  "name": "bignumber.io",
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {

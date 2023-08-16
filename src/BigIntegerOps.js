@@ -164,5 +164,8 @@ class bigInteger {
         }
         this.#result = BigInt(number)
     }
+    static greaterThan(){
+
+    }
 }
 module.exports = bigInteger
