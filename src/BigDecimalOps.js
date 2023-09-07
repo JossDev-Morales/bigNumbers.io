@@ -1,3 +1,4 @@
+const { converter } = require("number-converter.io")
 const isValidNumber = require("./IsValidNumber")
 /**
  * @class representation of a big decimal that exceeds the javascript limit
@@ -8,13 +9,13 @@ const isValidNumber = require("./IsValidNumber")
  * console.log(MyBigDecimalNumber.Return())//20000000000000000 
  * @public 
  */
-class BigDecimal {
+class bigDecimal {
     #result = null
     #record = null
     /**
      * BigDecimal constructor
      * @param {string | number} initilizedResult 
-     * @returns The initilized BigDecimal
+     * @returns {bigDecimal} The initilized BigDecimal
      * @public
      */
     constructor(initilizedResult) {
@@ -25,9 +26,46 @@ class BigDecimal {
             operations: []
         }
     }
+     /**
+     * 
+     * @param {string} Binary number in binary base
+     * @returns {bigDecimal} 
+     */
+    static fromBinary(Binary){
+        const binarynumber= new converter(Binary,'2')
+        return new this(binarynumber.toDecimal())
+    }
     /**
      * 
-     * @param {string | number} stringDecimal 
+     * @param {string} octal number in octal base
+     * @returns {bigDecimal}
+     */
+    static fromOctal(octal){
+        const octalnumber= new converter(octal,'8')
+        return new this(octalnumber.toDecimal())
+    }
+    /**
+     * 
+     * @param {string} hexadecimal number in hexadecimal base
+     * @returns {bigDecimal}
+     */
+    static fromHexadecimal(hexadecimal){
+        const hexanumber= new converter(hexadecimal,'16')
+        return new this(hexanumber.toDecimal())
+    }
+    /**
+     * 
+     * @param {string} number number in some base betwen 2 and 36
+     * @param {string} base the base of the number
+     * @returns {bigDecimal}
+     */
+    static fromOtherBase(number,base){
+        const basenumber= new converter(number,base)
+        return new this(basenumber.toDecimal())
+    }
+    /**
+     * 
+     * @param {string | number} stringDecimal number to add to the current value
      * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
      */
     Addition(stringDecimal, secondStringDecimal, createRecord = false) {
@@ -90,9 +128,9 @@ class BigDecimal {
             })
         } else {
             number2.ints.forEach((int, index) => {
-                let addition = Number(parseInt(int)+carry) + Number(number1.ints[index] ?? 0)
+                let addition = Number(parseInt(int) + carry) + Number(number1.ints[index] ?? 0)
                 if (addition >= 10) {
-                    ints.push(parseInt(addition) - 10 )
+                    ints.push(parseInt(addition) - 10)
                     carry = 1
                     if (number2.ints.length - 1 === index) {
                         ints.push(1)
@@ -120,13 +158,13 @@ class BigDecimal {
     }
     /**
      * 
-     * @param {string|number} stringDecimal
+     * @param {string|number} stringDecimal number to add to the current value
      * @method ReturnAddition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method
      * @returns {string} the result of the operation as a string
      */
     ReturnAddition(stringDecimal) {
         isValidNumber(String(stringDecimal))
-        
+
 
         const number1 = {
             ints: String(stringDecimal).split('.')[0].split('').reverse(),
@@ -210,7 +248,7 @@ class BigDecimal {
     }
     /**
      * 
-     * @param {string|number} string1 
+     * @param {string|number} string1 number to subtract the current value
      * @method Subtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method and sets the result of the operation as the current value
 
      */
@@ -392,7 +430,7 @@ class BigDecimal {
                         decimal = [0, ...decimal]
                     }
                 }
-                if (!int&&index == intsResult.length - 1 && integer == 0) {
+                if (!int && index == intsResult.length - 1 && integer == 0) {
                     int = integer
                 }
             })
@@ -441,17 +479,17 @@ class BigDecimal {
         }
 
         if (decimalsResult.every(decimal => decimal == 0) || decimalsResult.length === 0) {
-           result = intsResult.reverse().join('')
+            result = intsResult.reverse().join('')
         } else {
             result = intsResult.reverse().join('') + '.' + decimalsResult.reverse().join('')
         }
-        this.#result=result
+        this.#result = result
         this.#record.operations.push({ type: 'Subtraction', from, subtracting: string1, result: this.#result })
         return this
     }
     /**
      * 
-     * @param {string|number} string1
+     * @param {string|number} string1 number to subtract the current value
      * @method ReturnSubtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method
      * @returns {string} the result of the operation as a string 
      */
@@ -632,7 +670,7 @@ class BigDecimal {
                         decimal = [0, ...decimal]
                     }
                 }
-                if (!int&&index == intsResult.length - 1 && integer == 0) {
+                if (!int && index == intsResult.length - 1 && integer == 0) {
                     int = integer
                 }
             })
@@ -689,13 +727,13 @@ class BigDecimal {
     }
     /**
      * 
-     * @param {string|number} number 
+     * @param {string|number} number number to multiply
      * @method Multiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value
      */
     Multiplication(number) {
         isValidNumber(String(number))
         const from = this.#result
-        const decimalsCount = this.#result.split('.')[1]?.length||0 + String(number).split('.')[1]?.length||0
+        const decimalsCount = this.#result.split('.')[1]?.length || 0 + String(number).split('.')[1]?.length || 0
         const mult = (number, factor) => {
             let tempNumber = factor || this.#result
             let tempResult = factor || this.#result//5
@@ -716,13 +754,13 @@ class BigDecimal {
     }
     /**
      * 
-     * @param {string|number} number 
+     * @param {string|number} number number to multiply
      * @method ReturnMultiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method 
      * @returns {string} the result of the operation as a string 
      */
     ReturnMultiplication(number) {
         isValidNumber(String(number))
-        const decimalsCount = this.#result.split('.')[1]?.length||0 + String(number).split('.')[1]?.length||0
+        const decimalsCount = this.#result.split('.')[1]?.length || 0 + String(number).split('.')[1]?.length || 0
         const mult = (number, factor) => {
             let tempNumber = factor || this.#result
             let tempResult = factor || this.#result//5
@@ -740,12 +778,13 @@ class BigDecimal {
         }
     }
     /**
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
      * @method Return 
      * @returns {string} the current value as a string
      */
-    Return() {
+    Return(radix) {
         /**@type {string} */
-        const result = this.#result
+        const result = radix?new converter(this.#result,'10').toCustomBase(radix):this.#result
         return result
     }
     /**
@@ -766,14 +805,367 @@ class BigDecimal {
     /**
      * 
      * @param {string|number} number 
+     * @param {string|number} radix the base of the number you will pass to convert it to decimal base
      * @method SetBigInteger set the current value with the number you pass as a parameter and delete records
+     * @returns {bigDecimal}
      */
-    SetBigDecimal(number) {
-        isValidNumber(String(number))
-        this.#result = String(number)
+    SetBigDecimal(number,radix) {
+        const decimal = radix?new converter(number,radix).toDecimal():number
+        isValidNumber(decimal)
+        this.#result = decimal
         this.ClearRecord()
         return this
     }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method gt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is greater than this.
+     */
+    gt(number){
+        return BigDecimal.greaterThan(this.#result,number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method lt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is less than this.
+     */
+    lt(number){
+        return BigDecimal.lessThan(this.#result,number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method eq Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is the same as this.
+     */
+    eq(number){
+        return BigDecimal.isEqualTo(this.#result,number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method gte Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is greater than or equal to this.
+     */
+    gte(number){
+        return BigDecimal.greaterOrEqualThan(this.#result,number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method lte compara The current value of the "BigDecimal" with a number received as a parameter to know if the current value is less than or equal to this.
+     */
+    lte(number){
+        return BigDecimal.lessOrEqualThan(this.#result,number)
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method greaterThan Compare the first parameter with the second to find out if the first parameter is greater than the second parameter.
+     */
+    static greaterThan(param1, param2) {
+        const number1 = String(param1).split('')
+        const number2 = String(param2).split('')
+        const num1 = {
+            sign: number1[0] === '-' ? false : true,
+            ints: number1.join('').split('.')[0].split(''),
+            decimals: number1.join('').split('.')[1]?.split('') ?? [0]
+        }
+        const num2 = {
+            sign: String(number2).split('')[0] === '-' ? false : true,
+            ints: number2.join('').split('.')[0].split(''),
+            decimals: number2.join('').split('.')[1]?.split('') ?? [0]
+        }
+        if (!num1.sign) {
+            num1.ints.shift()
+        }
+        if (!num2.sign) {
+            num2.ints.shift()
+        }
+        while (num1.ints[0] == 0) {
+            num1.ints.shift()
+        }
+        while (num2.ints[0] == 0) {
+            num2.ints.shift()
+        }
+        while (num1.decimals[num1.decimals.length - 1] == 0 && num1.length > 1) {
+            num1.decimals.pop()
+        }
+        while (num2.decimals[num2.decimals.length - 1] == 0 && num2.length > 1) {
+            num2.decimals.pop()
+        }
+        if (num1.sign == false && num2.sign == true) {
+            return false
+        } else if (num1.sign == true && num2.sign == false) {
+            return true
+        } else if (num1.sign == false && num2.sign == false) {
+            if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
+                if (num1.ints.length > num2.ints.length) {
+                    return false
+                } else if (num1.ints.length < num2.ints.length) {
+                    return true
+                } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+                    return false
+                } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
+                    let tempToReturn = false
+                    let tempMark = false
+                    num1.ints.forEach((digit, index) => {
+                        if (digit !== num2.ints[index] && !tempMark) {
+                            if (digit > num2.ints[index]) {
+                                tempToReturn = true
+                                tempMark = true
+                            } else {
+                                tempMark = true
+                            }
+                        }
+                    })
+                    if (tempToReturn) {
+                        return false
+                    } else {
+                        return true
+                    }
+                } else {
+                    return true
+                }
+            } else {
+                if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+                    if (num1.decimals[0] > num2.decimals[0]) {
+                        return false
+                    } else if (num1.decimals[0] < num2.decimals[0]) {
+                        return true
+                    } else if (num1.decimals[0] > num2.decimals[0]) {
+                        return false
+                    } else if (num1.decimals[0] = num2.decimals[0]) {
+                        let tempToReturn = false
+                        let tempMark = false
+                        num1.decimals.forEach((digit, index) => {
+                            if (digit !== num2.decimals[index] && !tempMark) {
+                                if (digit > num2.decimals[index]) {
+                                    tempToReturn = true
+                                    tempMark = true
+                                } else {
+                                    tempMark = true
+                                }
+                            }
+                        })
+                        if (tempToReturn) {
+                            return false
+                        } else {
+                            return true
+                        }
+                    }
+                } else {
+                    return false
+                }
+            }
+        } else {
+            if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
+                if (num1.ints.length > num2.ints.length) {
+                    return true
+                } else if (num1.ints.length < num2.ints.length) {
+                    return false
+                } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+                    return true
+                } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
+                    let tempToReturn = false
+                    let tempMark = false
+                    num1.ints.forEach((digit, index) => {
+                        if (digit !== num2.ints[index] && !tempMark) {
+                            if (digit > num2.ints[index]) {
+                                tempToReturn = true
+                                tempMark = true
+                            } else {
+                                tempMark = true
+                            }
+                        }
+                    })
+                    if (tempToReturn) {
+                        return true
+                    } else {
+                        return false
+                    }
+                } else {
+                    return false
+                }
+            } else {
+                if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+                    if (num1.decimals[0] > num2.decimals[0] ?? 0) {
+                        return true
+                    } else if (num1.decimals[0] < num2.decimals[0]) {
+                        return false
+                    } else if (num1.decimals[0] > num2.decimals[0]) {
+                        return true
+                    } else if (num1.decimals[0] = num2.decimals[0]) {
+                        let tempToReturn = false
+                        let tempMark = false
+                        num1.decimals.forEach((digit, index) => {
+                            if (digit !== num2.decimals[index] && !tempMark) {
+                                if (digit > num2.decimals[index]) {
+                                    tempToReturn = true
+                                    tempMark = true
+                                } else {
+                                    tempMark = true
+                                }
+                            }
+                        })
+                        if (tempToReturn) {
+                            return true
+                        } else {
+                            return false
+                        }
+                    }
+                } else {
+                    return false
+                }
+            }
+        }
 
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method lessThan Compare the first parameter with the second to find out if the first parameter is less than the second parameter.
+     */
+    static lessThan(number1, number2) {
+        if (this.isEqualTo(number1, number2)) {
+            return false
+        } else {
+            return !this.greaterThan(number1, number2)
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method isEqualTo Compare the first parameter with the second to find out if both parameters are the same.
+     */
+    static isEqualTo(number1, number2) {
+        const num1 = {
+            ints: String(number1).split('.')[0].split(''),
+            decimals: String(number1).split('.')[1]?.split('') || [0]
+        }
+        const num2 = {
+            ints: String(number2).split('.')[0].split(''),
+            decimals: String(number2).split('.')[1]?.split('') || [0]
+        }
+        while (num1.ints[0] == 0) {
+            num1.ints.shift()
+        }
+        while (num2.ints[0] == 0) {
+            num2.ints.shift()
+        }
+        while (num1.decimals[num1.decimals.length - 1] == 0) {
+            num1.decimals.pop()
+        }
+        while (num2.decimals[num2.decimals.length - 1] == 0) {
+            num2.decimals.pop()
+        }
+        if (num1.ints.join('') === num2.ints.join('') && num1.decimals.join('') === num2.decimals.join('')) {
+            return true
+        } else {
+            console.log();
+            return false
+        }
+    }
+/**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method greaterOrEqualThan Compare the first parameter with the second to find out if the first parameter is greater than or equal to the second parameter.
+     */
+    static greaterOrEqualThan(number1, number2) {
+        if (this.isEqualTo(number1, number2)) {
+            return true
+        } else {
+            return this.greaterThan(number1, number2)
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method lessOrEqualThan Compare the first parameter with the second to find out if the first parameter is less than or equal to the second parameter.
+     */
+    static lessOrEqualThan(number1, number2) {
+        if (this.isEqualTo(number1, number2)) {
+            return true
+        } else {
+            return !this.greaterThan(number1, number2)
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isNaNDecimal It detects if a number is not a valid decimal, that is, it does not have more than a decimal point, that it has decimal values after the point and does not have Nan type characters.
+     */
+    static isNaNDecimal(number) {
+        let tempDotMark=false
+        return String(number).split('').some((digit,index,thisArr) => {
+            if (!tempDotMark) {
+                if (digit==='.') {
+                    tempDotMark=true
+                    if (thisArr[index+1]===undefined) {
+                        return true
+                    }
+                }else{
+                    return isNaN(digit)
+                }
+            }else{
+                return isNaN(digit)
+            }
+        })
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isDecimal It detects if a number is decimal, that is, if it is not "NaNDecimal" and has decimal values.
+     */
+    static isDecimal(number){
+        if (!this.isNaNDecimal(number)&&String(number).split('').some(digit=>digit==='.')) {
+            return true
+        }else{
+            return false
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isSafeInteger Detects if a number is an integer between the safe range of JavaScript for integers, starting from the smallest safe to the largest.
+     */
+    static isSafeInteger(number){
+        return this.greaterOrEqualThan(number,Number.MIN_SAFE_INTEGER)&&this.lessOrEqualThan(number,Number.MAX_SAFE_INTEGER)
+    }
+    /**
+     * 
+     * @param {string|number} number the number to convert to decimal base
+     * @param {string|number} radix the base of the number 
+     * @returns 
+     */
+    static baseToDecimal(number,radix){
+        return new converter(number,radix).toDecimal()
+    }
+    /**
+     * 
+     * @param {string|number} decimal the decimal number to convert
+     * @param {string|number} toRadix the base to convert the decimal number
+     * @returns 
+     */
+    static decimalToBase(decimal,toRadix){
+        return new converter(decimal,'10').toCustomBase(toRadix)
+    }
 }
-module.exports = BigDecimal
+console.log(bigDecimal.fromBinary('1101'));
+module.exports = bigDecimal

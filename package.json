@@ -39,5 +39,8 @@
   "repository": {
     "url": "https://github.com/JossDev-Morales/BigNumbers.io",
     "type": "github"
+  },
+  "dependencies": {
+    "number-converter.io": "^1.0.2"
   }
 }
