@@ -1,4 +1,4 @@
-# BigNumber.io [!['npm link'][npm-img]][npm-link]
+# BigNumber.io [!['npm link'][npm-version]][npm-link]
 
 [npm-version]:https://img.shields.io/npm/v/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
 [npm-link]:ttps://www.npmjs.com/package/bignumber.io
