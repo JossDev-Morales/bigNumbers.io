@@ -1,4 +1,5 @@
-# BigNumber.io [!['npm link'][npm-version]][npm-link] !['downloads'][downloads] [!['license'][license-img]][license-link] [![Build Status](https://img.shields.io/travis/com/JossDev-Morales/bigNumbers.io?style=for-the-badge&color=0ed35c&logo=travis&label=BUILD%20%26%20TESTS)](https://app.travis-ci.com/github/JossDev-Morales/bigNumbers.io?serverType=git)  
+# BigNumber.io 
+[!['npm link'][npm-version]][npm-link] !['downloads'][downloads] [!['license'][license-img]][license-link] [![Build Status](https://img.shields.io/travis/com/JossDev-Morales/bigNumbers.io?style=for-the-badge&color=0ed35c&logo=travis&label=BUILD%20%26%20TESTS)](https://app.travis-ci.com/github/JossDev-Morales/bigNumbers.io?serverType=git)  
 
 [npm-version]:https://img.shields.io/npm/v/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
 [npm-link]:ttps://www.npmjs.com/package/bignumber.io
