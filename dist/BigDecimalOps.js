@@ -19,7 +19,11 @@ function _classApplyDescriptorGet(receiver, descriptor) { if (descriptor.get) { 
 function _classPrivateFieldSet(receiver, privateMap, value) { var descriptor = _classExtractFieldDescriptor(receiver, privateMap, "set"); _classApplyDescriptorSet(receiver, descriptor, value); return value; }
 function _classExtractFieldDescriptor(receiver, privateMap, action) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to " + action + " private field on non-instance"); } return privateMap.get(receiver); }
 function _classApplyDescriptorSet(receiver, descriptor, value) { if (descriptor.set) { descriptor.set.call(receiver, value); } else { if (!descriptor.writable) { throw new TypeError("attempted to set read only private field"); } descriptor.value = value; } }
+var _require = require("number-converter.io"),
+  converter = _require.converter;
 var isValidNumber = require("./IsValidNumber");
+var _require2 = require("."),
+  BigDecimal = _require2.BigDecimal;
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -31,15 +35,15 @@ var isValidNumber = require("./IsValidNumber");
  */
 var _result = /*#__PURE__*/new WeakMap();
 var _record = /*#__PURE__*/new WeakMap();
-var BigDecimal = /*#__PURE__*/function () {
+var bigDecimal = /*#__PURE__*/function () {
   /**
    * BigDecimal constructor
    * @param {string | number} initilizedResult 
-   * @returns The initilized BigDecimal
+   * @returns {bigDecimal} The initilized BigDecimal
    * @public
    */
-  function BigDecimal(initilizedResult) {
-    _classCallCheck(this, BigDecimal);
+  function bigDecimal(initilizedResult) {
+    _classCallCheck(this, bigDecimal);
     _classPrivateFieldInitSpec(this, _result, {
       writable: true,
       value: null
@@ -56,13 +60,19 @@ var BigDecimal = /*#__PURE__*/function () {
     });
   }
   /**
-   * 
-   * @param {string | number} stringDecimal 
-   * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
-   */
-  _createClass(BigDecimal, [{
+  * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+  * @param {string} Binary number in binary base
+  * @returns {bigDecimal} 
+  */
+  _createClass(bigDecimal, [{
     key: "Addition",
-    value: function Addition(stringDecimal, secondStringDecimal) {
+    value:
+    /**
+     * 
+     * @param {string | number} stringDecimal number to add to the current value
+     * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
+     */
+    function Addition(stringDecimal, secondStringDecimal) {
       var _String$split$, _String$split$2;
       var createRecord = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       isValidNumber(String(stringDecimal));
@@ -165,7 +175,7 @@ var BigDecimal = /*#__PURE__*/function () {
     }
     /**
      * 
-     * @param {string|number} stringDecimal
+     * @param {string|number} stringDecimal number to add to the current value
      * @method ReturnAddition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method
      * @returns {string} the result of the operation as a string
      */
@@ -262,7 +272,7 @@ var BigDecimal = /*#__PURE__*/function () {
     }
     /**
      * 
-     * @param {string|number} string1 
+     * @param {string|number} string1 number to subtract the current value
      * @method Subtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method and sets the result of the operation as the current value
        */
   }, {
@@ -514,7 +524,7 @@ var BigDecimal = /*#__PURE__*/function () {
     }
     /**
      * 
-     * @param {string|number} string1
+     * @param {string|number} string1 number to subtract the current value
      * @method ReturnSubtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method
      * @returns {string} the result of the operation as a string 
      */
@@ -759,7 +769,7 @@ var BigDecimal = /*#__PURE__*/function () {
     }
     /**
      * 
-     * @param {string|number} number 
+     * @param {string|number} number number to multiply
      * @method Multiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value
      */
   }, {
@@ -796,7 +806,7 @@ var BigDecimal = /*#__PURE__*/function () {
     }
     /**
      * 
-     * @param {string|number} number 
+     * @param {string|number} number number to multiply
      * @method ReturnMultiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method 
      * @returns {string} the result of the operation as a string 
      */
@@ -825,14 +835,16 @@ var BigDecimal = /*#__PURE__*/function () {
       }
     }
     /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
      * @method Return 
      * @returns {string} the current value as a string
      */
   }, {
     key: "Return",
-    value: function Return() {
+    value: function Return(radix) {
       /**@type {string} */
-      var result = _classPrivateFieldGet(this, _result);
+      var result = radix ? new converter(_classPrivateFieldGet(this, _result), '10').toCustomBase(radix) : _classPrivateFieldGet(this, _result);
       return result;
     }
     /**
@@ -855,19 +867,449 @@ var BigDecimal = /*#__PURE__*/function () {
       return this;
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number 
+     * @param {string|number} radix the base of the number you will pass to convert it to decimal base
      * @method SetBigInteger set the current value with the number you pass as a parameter and delete records
+     * @returns {bigDecimal}
      */
   }, {
     key: "SetBigDecimal",
-    value: function SetBigDecimal(number) {
-      isValidNumber(String(number));
-      _classPrivateFieldSet(this, _result, String(number));
+    value: function SetBigDecimal(number, radix) {
+      var decimal = radix ? new converter(number, radix).toDecimal() : number;
+      isValidNumber(decimal);
+      _classPrivateFieldSet(this, _result, decimal);
       this.ClearRecord();
       return this;
     }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method gt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is greater than this.
+     */
+  }, {
+    key: "gt",
+    value: function gt(number) {
+      return bigDecimal.greaterThan(_classPrivateFieldGet(this, _result), number);
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method lt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is less than this.
+     */
+  }, {
+    key: "lt",
+    value: function lt(number) {
+      return bigDecimal.lessThan(_classPrivateFieldGet(this, _result), number);
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method eq Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is the same as this.
+     */
+  }, {
+    key: "eq",
+    value: function eq(number) {
+      return BigDecimal.isEqualTo(_classPrivateFieldGet(this, _result), number);
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method gte Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is greater than or equal to this.
+     */
+  }, {
+    key: "gte",
+    value: function gte(number) {
+      return BigDecimal.greaterOrEqualThan(_classPrivateFieldGet(this, _result), number);
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method lte compara The current value of the "BigDecimal" with a number received as a parameter to know if the current value is less than or equal to this.
+     */
+  }, {
+    key: "lte",
+    value: function lte(number) {
+      return BigDecimal.lessOrEqualThan(_classPrivateFieldGet(this, _result), number);
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method greaterThan Compare the first parameter with the second to find out if the first parameter is greater than the second parameter.
+     */
+  }], [{
+    key: "fromBinary",
+    value: function fromBinary(Binary) {
+      var binarynumber = new converter(Binary, '2');
+      return new this(binarynumber.toDecimal());
+    }
+    /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} octal number in octal base
+     * @returns {bigDecimal}
+     */
+  }, {
+    key: "fromOctal",
+    value: function fromOctal(octal) {
+      var octalnumber = new converter(octal, '8');
+      return new this(octalnumber.toDecimal());
+    }
+    /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} hexadecimal number in hexadecimal base
+     * @returns {bigDecimal}
+     */
+  }, {
+    key: "fromHexadecimal",
+    value: function fromHexadecimal(hexadecimal) {
+      var hexanumber = new converter(hexadecimal, '16');
+      return new this(hexanumber.toDecimal());
+    }
+    /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} number number in some base betwen 2 and 36
+     * @param {string} base the base of the number
+     * @returns {bigDecimal}
+     */
+  }, {
+    key: "fromOtherBase",
+    value: function fromOtherBase(number, base) {
+      var basenumber = new converter(number, base);
+      return new this(basenumber.toDecimal());
+    }
+  }, {
+    key: "greaterThan",
+    value: function greaterThan(param1, param2) {
+      var _number1$join$split$, _number1$join$split$2, _number2$join$split$, _number2$join$split$2;
+      var number1 = String(param1).split('');
+      var number2 = String(param2).split('');
+      var num1 = {
+        sign: number1[0] === '-' ? false : true,
+        ints: number1.join('').split('.')[0].split(''),
+        decimals: (_number1$join$split$ = (_number1$join$split$2 = number1.join('').split('.')[1]) === null || _number1$join$split$2 === void 0 ? void 0 : _number1$join$split$2.split('')) !== null && _number1$join$split$ !== void 0 ? _number1$join$split$ : [0]
+      };
+      var num2 = {
+        sign: String(number2).split('')[0] === '-' ? false : true,
+        ints: number2.join('').split('.')[0].split(''),
+        decimals: (_number2$join$split$ = (_number2$join$split$2 = number2.join('').split('.')[1]) === null || _number2$join$split$2 === void 0 ? void 0 : _number2$join$split$2.split('')) !== null && _number2$join$split$ !== void 0 ? _number2$join$split$ : [0]
+      };
+      if (!num1.sign) {
+        num1.ints.shift();
+      }
+      if (!num2.sign) {
+        num2.ints.shift();
+      }
+      while (num1.ints[0] == 0) {
+        num1.ints.shift();
+      }
+      while (num2.ints[0] == 0) {
+        num2.ints.shift();
+      }
+      while (num1.decimals[num1.decimals.length - 1] == 0 && num1.length > 1) {
+        num1.decimals.pop();
+      }
+      while (num2.decimals[num2.decimals.length - 1] == 0 && num2.length > 1) {
+        num2.decimals.pop();
+      }
+      if (num1.sign == false && num2.sign == true) {
+        return false;
+      } else if (num1.sign == true && num2.sign == false) {
+        return true;
+      } else if (num1.sign == false && num2.sign == false) {
+        if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
+          if (num1.ints.length > num2.ints.length) {
+            return false;
+          } else if (num1.ints.length < num2.ints.length) {
+            return true;
+          } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+            return false;
+          } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
+            var tempToReturn = false;
+            var tempMark = false;
+            num1.ints.forEach(function (digit, index) {
+              if (digit !== num2.ints[index] && !tempMark) {
+                if (digit > num2.ints[index]) {
+                  tempToReturn = true;
+                  tempMark = true;
+                } else {
+                  tempMark = true;
+                }
+              }
+            });
+            if (tempToReturn) {
+              return false;
+            } else {
+              return true;
+            }
+          } else {
+            return true;
+          }
+        } else {
+          if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+            if (num1.decimals[0] > num2.decimals[0]) {
+              return false;
+            } else if (num1.decimals[0] < num2.decimals[0]) {
+              return true;
+            } else if (num1.decimals[0] > num2.decimals[0]) {
+              return false;
+            } else if (num1.decimals[0] = num2.decimals[0]) {
+              var _tempToReturn = false;
+              var _tempMark = false;
+              num1.decimals.forEach(function (digit, index) {
+                if (digit !== num2.decimals[index] && !_tempMark) {
+                  if (digit > num2.decimals[index]) {
+                    _tempToReturn = true;
+                    _tempMark = true;
+                  } else {
+                    _tempMark = true;
+                  }
+                }
+              });
+              if (_tempToReturn) {
+                return false;
+              } else {
+                return true;
+              }
+            }
+          } else {
+            return false;
+          }
+        }
+      } else {
+        if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
+          if (num1.ints.length > num2.ints.length) {
+            return true;
+          } else if (num1.ints.length < num2.ints.length) {
+            return false;
+          } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+            return true;
+          } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
+            var _tempToReturn2 = false;
+            var _tempMark2 = false;
+            num1.ints.forEach(function (digit, index) {
+              if (digit !== num2.ints[index] && !_tempMark2) {
+                if (digit > num2.ints[index]) {
+                  _tempToReturn2 = true;
+                  _tempMark2 = true;
+                } else {
+                  _tempMark2 = true;
+                }
+              }
+            });
+            if (_tempToReturn2) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        } else {
+          if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+            var _ref;
+            if ((_ref = num1.decimals[0] > num2.decimals[0]) !== null && _ref !== void 0 ? _ref : 0) {
+              return true;
+            } else if (num1.decimals[0] < num2.decimals[0]) {
+              return false;
+            } else if (num1.decimals[0] > num2.decimals[0]) {
+              return true;
+            } else if (num1.decimals[0] = num2.decimals[0]) {
+              var _tempToReturn3 = false;
+              var _tempMark3 = false;
+              num1.decimals.forEach(function (digit, index) {
+                if (digit !== num2.decimals[index] && !_tempMark3) {
+                  if (digit > num2.decimals[index]) {
+                    _tempToReturn3 = true;
+                    _tempMark3 = true;
+                  } else {
+                    _tempMark3 = true;
+                  }
+                }
+              });
+              if (_tempToReturn3) {
+                return true;
+              } else {
+                return false;
+              }
+            }
+          } else {
+            return false;
+          }
+        }
+      }
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method lessThan Compare the first parameter with the second to find out if the first parameter is less than the second parameter.
+     */
+  }, {
+    key: "lessThan",
+    value: function lessThan(number1, number2) {
+      if (this.isEqualTo(number1, number2)) {
+        return false;
+      } else {
+        return !this.greaterThan(number1, number2);
+      }
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method isEqualTo Compare the first parameter with the second to find out if both parameters are the same.
+     */
+  }, {
+    key: "isEqualTo",
+    value: function isEqualTo(number1, number2) {
+      var _String$split$11, _String$split$12;
+      var num1 = {
+        ints: String(number1).split('.')[0].split(''),
+        decimals: ((_String$split$11 = String(number1).split('.')[1]) === null || _String$split$11 === void 0 ? void 0 : _String$split$11.split('')) || [0]
+      };
+      var num2 = {
+        ints: String(number2).split('.')[0].split(''),
+        decimals: ((_String$split$12 = String(number2).split('.')[1]) === null || _String$split$12 === void 0 ? void 0 : _String$split$12.split('')) || [0]
+      };
+      while (num1.ints[0] == 0) {
+        num1.ints.shift();
+      }
+      while (num2.ints[0] == 0) {
+        num2.ints.shift();
+      }
+      while (num1.decimals[num1.decimals.length - 1] == 0) {
+        num1.decimals.pop();
+      }
+      while (num2.decimals[num2.decimals.length - 1] == 0) {
+        num2.decimals.pop();
+      }
+      if (num1.ints.join('') === num2.ints.join('') && num1.decimals.join('') === num2.decimals.join('')) {
+        return true;
+      } else {
+        console.log();
+        return false;
+      }
+    }
+    /**
+         * 
+         * @param {string|number} number1 
+         * @param {string|number} number2 
+         * @returns {boolean}
+         * @method greaterOrEqualThan Compare the first parameter with the second to find out if the first parameter is greater than or equal to the second parameter.
+         */
+  }, {
+    key: "greaterOrEqualThan",
+    value: function greaterOrEqualThan(number1, number2) {
+      if (this.isEqualTo(number1, number2)) {
+        return true;
+      } else {
+        return this.greaterThan(number1, number2);
+      }
+    }
+    /**
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method lessOrEqualThan Compare the first parameter with the second to find out if the first parameter is less than or equal to the second parameter.
+     */
+  }, {
+    key: "lessOrEqualThan",
+    value: function lessOrEqualThan(number1, number2) {
+      if (this.isEqualTo(number1, number2)) {
+        return true;
+      } else {
+        return !this.greaterThan(number1, number2);
+      }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isNaNDecimal It detects if a number is not a valid decimal, that is, it does not have more than a decimal point, that it has decimal values after the point and does not have Nan type characters.
+     */
+  }, {
+    key: "isNaNDecimal",
+    value: function isNaNDecimal(number) {
+      var tempDotMark = false;
+      return String(number).split('').some(function (digit, index, thisArr) {
+        if (!tempDotMark) {
+          if (digit === '.') {
+            tempDotMark = true;
+            if (thisArr[index + 1] === undefined) {
+              return true;
+            }
+          } else {
+            return isNaN(digit);
+          }
+        } else {
+          return isNaN(digit);
+        }
+      });
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isDecimal It detects if a number is decimal, that is, if it is not "NaNDecimal" and has decimal values.
+     */
+  }, {
+    key: "isDecimal",
+    value: function isDecimal(number) {
+      if (!this.isNaNDecimal(number) && String(number).split('').some(function (digit) {
+        return digit === '.';
+      })) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @returns {boolean}
+     * @method isSafeInteger Detects if a number is an integer between the safe range of JavaScript for integers, starting from the smallest safe to the largest.
+     */
+  }, {
+    key: "isSafeInteger",
+    value: function isSafeInteger(number) {
+      return this.greaterOrEqualThan(number, Number.MIN_SAFE_INTEGER) && this.lessOrEqualThan(number, Number.MAX_SAFE_INTEGER);
+    }
+    /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} number the number to convert to decimal base
+     * @param {string|number} radix the base of the number 
+     * @method baseToDecimal This method convert a number from any base to a decimal number.
+     * @returns {string} The converted number to decimal
+     */
+  }, {
+    key: "baseToDecimal",
+    value: function baseToDecimal(number, radix) {
+      return new converter(number, radix).toDecimal();
+    }
+    /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} decimal The decimal number to convert
+     * @param {string|number} toRadix The base to convert the decimal number
+     * @method decimalToBase This method convert a decimal number to other base.
+     * @returns {string} The converted decimal number to other base 
+     */
+  }, {
+    key: "decimalToBase",
+    value: function decimalToBase(decimal, toRadix) {
+      return new converter(decimal, '10').toCustomBase(toRadix);
+    }
   }]);
-  return BigDecimal;
+  return bigDecimal;
 }();
-module.exports = BigDecimal;
+console.log(bigDecimal.fromBinary('1101'));
+module.exports = bigDecimal;

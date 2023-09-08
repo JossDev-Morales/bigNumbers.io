@@ -1,10 +1,10 @@
 "use strict";
 
-var BigDecimal = require("./BigDecimalOps");
+var bigDecimal = require("./BigDecimalOps");
 var bigInteger = require("./BigIntegerOps");
 var IsValidNumber = require("./IsValidNumber");
 module.exports = {
   bigInteger: bigInteger,
-  BigDecimal: BigDecimal,
+  bigDecimal: bigDecimal,
   IsValidNumber: IsValidNumber
 };
