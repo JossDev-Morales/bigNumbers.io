@@ -5,7 +5,7 @@
 [npm-version]:https://img.shields.io/npm/v/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
 [npm-link]:ttps://www.npmjs.com/package/bignumber.io
 [downloads]:https://img.shields.io/npm/dt/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
-[license-link]:'https://github.com/JossDev-Morales/bigNumbers.io/blob/main/LICENSE'
+[license-link]:https://github.com/JossDev-Morales/bigNumbers.io/blob/main/LICENSE
 [license-img]:https://img.shields.io/github/license/JossDev-Morales/bigNumbers.io?style=for-the-badge
 [git-img]:https://img.shields.io/badge/Git--hub-161b22?logo=github&style=social
 [git-link]:https://github.com/JossDev-Morales/bigNumbers.io
