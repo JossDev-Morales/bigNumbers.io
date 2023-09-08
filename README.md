@@ -1,8 +1,8 @@
-# BigNumbers.io
+# BigNumber.io
 ---
-[Releases Notes](https://gist.github.com/JossDev-Morales/3d2f932c099e5015cca3f51e3a398f30)
+[Releases Notes](https://github.com/JossDev-Morales/bigNumbers.io#releases-notes)
 
-[**BigNumbers.io**](https://www.npmjs.com/package/bignumbers.io "BigNumbers.io npm link") is a library for javascript operations to be able to handle very large integer numbers and very large decimal numbers, giving you control over this number and facilitating basic mathematics, with good handling of descriptive errors.
+[**BigNumber.io**](https://www.npmjs.com/package/bignumber.io "BigNumber.io npm link") is a library for javascript operations to be able to handle very large integer numbers and very large decimal numbers, giving you control over this number and facilitating basic mathematics, with good handling of descriptive errors.
 
 ## Usage
 To be able to represent integers you will need the BigInteger class and for decimal numbers the BigDecimal class, both are an abstraction of these number types.
