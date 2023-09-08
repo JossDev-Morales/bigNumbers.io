@@ -4,7 +4,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "lint": "eslint src "
+    "lint": "eslint src ",
+    "build":"npx babel src -d dist"
   },
   "keywords": [
     "big",
@@ -22,6 +23,7 @@
     "Operations",
     "decimal node",
     "big ints",
+    "number-converter.io",
     "Mango.io"
   ],
   "author": "JossDev",
@@ -37,9 +39,21 @@
     "jest": "^29.6.1"
   },
   "repository": {
-    "url": "https://github.com/JossDev-Morales/BigNumbers.io",
+    "url": "https://github.com/JossDev-Morales/bigNumbers.io",
     "type": "github"
   },
+  "bugs": {
+    "email": "thejosuescript@gmail.com",
+    "url": "https://github.com/JossDev-Morales/bigNumbers.io/issues"
+  },
+  "homepage": "https://github.com/JossDev-Morales/bigNumbers.io#readme",
+  "maintainers": [
+    {
+      "email": "thejosuescript@gmail.com",
+      "name": "Josue Eleazar Tejeda Morales",
+      "url": "https://github.com/JossDev-Morales?tab=overview"
+    }
+  ],
   "dependencies": {
     "number-converter.io": "^1.0.2"
   }
