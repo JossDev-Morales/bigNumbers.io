@@ -1,8 +1,7 @@
 # BigNumber.io [!['version'][npm-version]][npm-link]
----
+
 [npm-version][https://img.shields.io/npm/v/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000]
 [npm-link][https://www.npmjs.com/package/bignumber.io]
-
 
 [Releases Notes](https://github.com/JossDev-Morales/bigNumbers.io#releases-notes)
 
