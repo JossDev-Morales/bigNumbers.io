@@ -1,5 +1,6 @@
 const { converter } = require("number-converter.io")
 const isValidNumber = require("./IsValidNumber")
+const { BigDecimal } = require(".")
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -27,7 +28,7 @@ class bigDecimal {
         }
     }
      /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string} Binary number in binary base
      * @returns {bigDecimal} 
      */
@@ -36,7 +37,7 @@ class bigDecimal {
         return new this(binarynumber.toDecimal())
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string} octal number in octal base
      * @returns {bigDecimal}
      */
@@ -45,7 +46,7 @@ class bigDecimal {
         return new this(octalnumber.toDecimal())
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string} hexadecimal number in hexadecimal base
      * @returns {bigDecimal}
      */
@@ -54,7 +55,7 @@ class bigDecimal {
         return new this(hexanumber.toDecimal())
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string} number number in some base betwen 2 and 36
      * @param {string} base the base of the number
      * @returns {bigDecimal}
@@ -778,6 +779,7 @@ class bigDecimal {
         }
     }
     /**
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
      * @method Return 
      * @returns {string} the current value as a string
@@ -803,7 +805,7 @@ class bigDecimal {
         return this
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number 
      * @param {string|number} radix the base of the number you will pass to convert it to decimal base
      * @method SetBigInteger set the current value with the number you pass as a parameter and delete records
@@ -823,7 +825,7 @@ class bigDecimal {
      * @method gt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is greater than this.
      */
     gt(number){
-        return BigDecimal.greaterThan(this.#result,number)
+        return bigDecimal.greaterThan(this.#result,number)
     }
     /**
      * 
@@ -832,7 +834,7 @@ class bigDecimal {
      * @method lt Compare the current value of the "BigDecimal" with a number received as a parameter to know if the current value is less than this.
      */
     lt(number){
-        return BigDecimal.lessThan(this.#result,number)
+        return bigDecimal.lessThan(this.#result,number)
     }
     /**
      * 
@@ -1149,19 +1151,21 @@ class bigDecimal {
         return this.greaterOrEqualThan(number,Number.MIN_SAFE_INTEGER)&&this.lessOrEqualThan(number,Number.MAX_SAFE_INTEGER)
     }
     /**
-     * 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number the number to convert to decimal base
      * @param {string|number} radix the base of the number 
-     * @returns 
+     * @method baseToDecimal This method convert a number from any base to a decimal number.
+     * @returns {string} The converted number to decimal
      */
     static baseToDecimal(number,radix){
         return new converter(number,radix).toDecimal()
     }
     /**
-     * 
-     * @param {string|number} decimal the decimal number to convert
-     * @param {string|number} toRadix the base to convert the decimal number
-     * @returns 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} decimal The decimal number to convert
+     * @param {string|number} toRadix The base to convert the decimal number
+     * @method decimalToBase This method convert a decimal number to other base.
+     * @returns {string} The converted decimal number to other base 
      */
     static decimalToBase(decimal,toRadix){
         return new converter(decimal,'10').toCustomBase(toRadix)

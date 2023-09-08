@@ -1,6 +1,6 @@
-const BigDecimal = require("./BigDecimalOps");
+const bigDecimal = require("./BigDecimalOps");
 const bigInteger = require("./BigIntegerOps");
 const IsValidNumber = require("./IsValidNumber")
 
 
-module.exports={bigInteger,BigDecimal,IsValidNumber}
+module.exports={bigInteger,bigDecimal,IsValidNumber}

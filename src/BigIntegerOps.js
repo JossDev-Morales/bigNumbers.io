@@ -27,8 +27,8 @@ class bigInteger {
         }
     }
     /**
-     * 
-     * @param {string} Binary number in binary base
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} Binary Number in binary base
      * @returns {bigInteger} 
      */
     static fromBinary(Binary){
@@ -36,8 +36,8 @@ class bigInteger {
         return new this(binarynumber.toDecimal())
     }
     /**
-     * 
-     * @param {string} octal number in octal base
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} octal Number in octal base
      * @returns {bigInteger}
      */
     static fromOctal(octal){
@@ -45,8 +45,8 @@ class bigInteger {
         return new this(octalnumber.toDecimal())
     }
     /**
-     * 
-     * @param {string} hexadecimal number in hexadecimal base
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} hexadecimal Number in hexadecimal base
      * @returns {bigInteger}
      */
     static fromHexadecimal(hexadecimal){
@@ -54,9 +54,9 @@ class bigInteger {
         return new this(hexanumber.toDecimal())
     }
     /**
-     * 
-     * @param {string} number number in some base betwen 2 and 36
-     * @param {string} base the base of the number
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string} number Number in some base betwen 2 and 36
+     * @param {string} base The base of the number
      * @returns {bigInteger}
      */
     static fromOtherBase(number,base){
@@ -65,8 +65,8 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to add to the current value
-     * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
+     * @param {string|number} number Number to add to the current value
+     * @method Addition Adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
      */
     Addition(number) {
         if (String(number).split('.')[1]) {
@@ -79,9 +79,9 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to add to the current value
-     * @method ReturnAddition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method
-     * @returns {string} the result of the operation as a string
+     * @param {string|number} number Number to add to the current value
+     * @method ReturnAddition Adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method
+     * @returns {string} The result of the operation as a string
      */
     ReturnAddition(number) {
         if (String(number).split('.')[1]) {
@@ -91,8 +91,8 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to subtract the current value
-     * @method Subtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method and sets the result of the operation as the current value
+     * @param {string|number} number Number to subtract the current value
+     * @method Subtraction Subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method and sets the result of the operation as the current value
 
      */
     Subtraction(number) {
@@ -106,9 +106,9 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to subtract the current value
-     * @method ReturnSubtraction subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method
-     * @returns {string} the result of the operation as a string 
+     * @param {string|number} number Number to subtract the current value
+     * @method ReturnSubtraction Subtracts two numbers, the number corresponding to the current value minus the number you pass as a parameter to this method
+     * @returns {string} The result of the operation as a string 
      */
     ReturnSubtraction(number) {
         if (String(number).split('.')[1]) {
@@ -118,8 +118,8 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to multiply
-     * @method Multiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value
+     * @param {string|number} number Number to multiply
+     * @method Multiplication Multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value
      */
     Multiplication(number) {
         if (String(number).split('.')[1]) {
@@ -132,9 +132,9 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to multiply
-     * @method ReturnMultiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method 
-     * @returns {string} the result of the operation as a string 
+     * @param {string|number} number Number to multiply
+     * @method ReturnMultiplication Multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method 
+     * @returns {string} The result of the operation as a string 
      */
     ReturnMultiplication(number) {
         if (String(number).split('.')[1]) {
@@ -144,8 +144,8 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to divide the current value
-     * @method Division divides the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value.
+     * @param {string|number} number Number to divide the current value
+     * @method Division Divides the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value.
      */
     Division(number) {
         if (String(number).split('.')[1]) {
@@ -158,9 +158,9 @@ class bigInteger {
     }
     /**
      * 
-     * @param {string|number} number number to divide the current value
-     * @method ReturnDivision divides the number corresponding to the current value by the number you pass as a parameter to this method
-     * @returns {string} the result of the operation as a string
+     * @param {string|number} number Number to divide the current value
+     * @method ReturnDivision Divides the number corresponding to the current value by the number you pass as a parameter to this method
+     * @returns {string} The result of the operation as a string
      */
     ReturnDivision(number) {
         if (String(number).split('.')[1]) {
@@ -169,9 +169,10 @@ class bigInteger {
         return BigInt(this.#result / BigInt(number)).toString()
     }
     /**
-     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix The numeric base to convert the current value
      * @method Return 
-     * @returns {string} the current value as a string
+     * @returns {string} The current value as a string
      */
     Return(radix) {
         const result = radix?new converter(this.#result.toString(),'10').toCustomBase(radix):this.#result.toString()
@@ -179,23 +180,23 @@ class bigInteger {
     }
     /**
      * 
-     * @returns {object} a log of all operations since the previous record reset
+     * @returns {object} A log of all operations since the previous record reset
      */
     GetRecord() {
         this.#record.currentValue = this.#result
         return this.#record
     }
     /**
-     * @method ClearRecord resets the log of operations so far
+     * @method ClearRecord Resets the log of operations so far
      */
     ClearRecord() {
         this.#record.operations = []
     }
     /**
-     * 
-     * @param {string|number} number number to set the current value
-     * @param {string|number} radix the base of the number you will pass to convert it to decimal base
-     * @method SetBigInteger set the current value with the number you pass as a parameter
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} number Number to set the current value
+     * @param {string|number} radix The base of the number you will pass to convert it to decimal base
+     * @method SetBigInteger Set the current value with the number you pass as a parameter
      * @returns {bigInteger}
      */
     SetBigInteger(number,radix) {
@@ -321,18 +322,18 @@ class bigInteger {
         return this.greaterOrEqualThan(number,Number.MIN_SAFE_INTEGER)&&this.lessOrEqualThan(number,Number.MAX_SAFE_INTEGER)
     }
     /**
-     * 
-     * @param {string|number} number the number to convert to decimal base
-     * @param {string|number} radix the base of the number 
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} number The number to convert to decimal base
+     * @param {string|number} radix The base of the number 
      * @returns 
      */
     static baseToDecimal(number,radix){
         return new converter(number,radix).toDecimal()
     }
     /**
-     * 
-     * @param {string|number} decimal the decimal number to convert
-     * @param {string|number} toRadix the base to convert the decimal number
+     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
+     * @param {string|number} decimal The decimal number to convert
+     * @param {string|number} toRadix The base to convert the decimal number
      * @returns 
      */
     static decimalToBase(decimal,toRadix){
