@@ -1,5 +1,6 @@
 # BigNumbers.io
 ---
+[Releases Notes](https://gist.github.com/JossDev-Morales/3d2f932c099e5015cca3f51e3a398f30)
 
 [**BigNumbers.io**](https://www.npmjs.com/package/bignumbers.io "BigNumbers.io npm link") is a library for javascript operations to be able to handle very large integer numbers and very large decimal numbers, giving you control over this number and facilitating basic mathematics, with good handling of descriptive errors.
 
@@ -19,6 +20,40 @@ To be able to represent integers you will need the BigInteger class and for deci
 - Division
 - ReturnDivision
 
+#### **Comparation methods**
+
+- gt
+- lt
+- eq
+- gte
+- lte
+
+##### **Comparation static methods**
+
+- greaterThan
+- lessThan
+- isEqualTo
+- greaterOrEqualThan
+- lessOrEqualThan
+- isNaNDecimal (for bigDecimal)
+- isNaNInt (for bigInteger)
+- isDecimal (only in bigDecimal)
+- isSafeInteger
+
+#### **Conversion static methods**
+
+- fromBinary
+- fromOctal
+- fromHexadecimal
+- fromOtherBase
+- baseToDecimal
+- decimalToBase
+
+Now some old methods also allow you to use conversion, see the [`documentation`](https://github.com/JossDev-Morales/number-converter.io#readme) for conversions and the [releases notes](https://gist.github.com/JossDev-Morales/3d2f932c099e5015cca3f51e3a398f30).
+
+- Return
+- SetBigInteger | SetBigDecimal
+
 #### **Non-arithmetic methods**
 
 - Return
@@ -31,7 +66,7 @@ To be able to represent integers you will need the BigInteger class and for deci
 
 Well, this classes are a representation of a big number (BigNumber) that exceeds the javascript limit, its usefull for arithmetic operations with this numbers and give you a record of operations in a **BigNumber** representation.
 
-**It is very simple to use, let's take a look.**
+**It is very simple to use, let's take a look**
 ```js
    //We initialize the value of the representation by passing a value to the constructor
    const MyBigIntegerNumber = new BigInteger('1999999999999999999999')//we initialize the value
@@ -91,7 +126,7 @@ Example of Return arithmetic methods:
 #### Description: 
 adds two numbers, the number corresponding to the `current value` plus the one you pass as a parameter to this method and sets the result of the operation as the `current value`.
 
-#### Return:
+#### Returns:
 `this` object
 
 ### Subtraction
@@ -103,7 +138,7 @@ adds two numbers, the number corresponding to the `current value` plus the one y
 #### Description:
 subtracts two numbers, the number corresponding to the `current value` minus the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
 
-#### Return:
+#### Returns:
 `this` object
 
 ### Mulptiplication
@@ -115,7 +150,7 @@ subtracts two numbers, the number corresponding to the `current value` minus the
 #### Description:
 multiplies two numbers, the number corresponding to the `current value` by the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
 
-#### Return:
+#### Returns:
 `this` object
 
 ### Division
@@ -128,16 +163,16 @@ multiplies two numbers, the number corresponding to the `current value` by the n
 divides the number corresponding to the `current value` by the number you pass as a parameter to this method and sets the result of the operation as the `current value`.
 
 
-#### Return:
+#### Returns:
 `this` object
 
 ### Return
 ---
 
 #### Description:
-returns the `current value` as a string representation
+returns the `current value` as a string representation and now if you pass a radix, `Return` will convert the `current value` to a other base.
 
-#### Return:
+#### Returns:
 `current value` as a `string`
 
 ### GetRecord
@@ -146,7 +181,7 @@ returns the `current value` as a string representation
 #### Description:
 a log of all operations since the previous `record` reset
 
-#### Return:
+#### Returns:
 `record` as an `object`
 
 ### ClearRecord
@@ -155,19 +190,211 @@ a log of all operations since the previous `record` reset
 #### Description:
 resets the `record` of operations so far
 
-#### Return:
-`undefined`
+#### Returns:
+`this`
+
 
 ### Set-CurrentObject
 ---
 - BigDecimal
 - BigInteger
 
-#### Description:
-set the current value with the number you pass as a parameter
+#### Parameters
+- `number` the number to set the current value
+- `radix` the base of the number to convert it to a decimal base
 
-#### Return:
-`undefined`
+#### Description:
+set the current value with the number you pass as a parameter and now you can use a number in another number base, passing another parameter named Radix, indicating the base of the number
+
+#### Returns:
+`this`
+
+
+### gt
+---
+
+#### Parameters:
+- number as a `string` or `number`
+
+#### Description:
+Compare the current value with a number received as a parameter to know if the current value is greater than this
+
+#### Returns:
+`boolean`
+
+
+### lt
+---
+
+#### Parameters:
+- number as a `string` or `number`
+
+#### Description:
+Compare the current value with a number received as a parameter to know if the current value is less than this
+
+#### Returns:
+`boolean`
+
+
+### eq
+---
+
+#### Parameters:
+- number as a `string` or `number`
+
+#### Description:
+Compare the current value with a number received as a parameter to know if the current value is equal to this
+
+#### Returns:
+`boolean`
+
+
+### gte
+---
+
+#### Parameters:
+- number as a `string` or `number`
+
+#### Description:
+Compare the current value with a number received as a parameter to know if the current value is greater or equal than this
+
+#### Returns:
+`boolean`
+
+
+### lte
+---
+
+#### Parameters:
+- number as a `string` or `number`
+
+#### Description:
+Compare the current value with a number received as a parameter to know if the current value is less or equal than this
+
+#### Returns:
+`boolean`
+
+### Static Methods
+
+#### greaterThan
+---
+##### Description:
+Compare the first parameter with the second to find out if the first parameter is greater than the second parameter.
+
+##### Parameters:
+- `number1` The first number
+- `number2` The second number
+
+#### Returns:
+`boolean`
+
+#### lessThan
+---
+##### Description:
+Compare the first parameter with the second to find out if the first parameter is less than the second parameter.
+
+##### Parameters:
+- `number1` The first number
+- `number2` The second number
+
+#### Returns:
+`boolean`
+
+#### isEqualTo
+---
+##### Description:
+Compare the first parameter with the second to find out if both parameters are the same.
+
+##### Parameters:
+- `number1` The first number
+- `number2` The second number
+
+#### Returns:
+`boolean`
+
+#### greaterOrEqualThan
+---
+##### Description:
+Compare the first parameter with the second to find out if the first parameter is greater than or equal to the second parameter.
+
+##### Parameters:
+- `number1` The first number
+- `number2` The second number
+
+#### Returns:
+`boolean`
+
+#### lessOrEqualThan
+---
+##### Description:
+Compare the first parameter with the second to find out if the first parameter is less than or equal to the second parameter.
+
+##### Parameters:
+- `number1` The first number
+- `number2` The second number
+
+#### Returns:
+`boolean`
+
+#### isNaNDecimal
+---
+##### Description:
+It detects if a number is not a valid decimal, that is, it does not have more than a decimal point, that it has decimal values after the point and does not have Nan type characters.
+
+##### Parameters:
+- `number` The number
+
+#### Returns:
+`boolean`
+
+
+#### isDecimal
+---
+##### Description:
+It detects if a number is decimal, that is, if it is not "NaNDecimal" and has decimal values.
+
+##### Parameters:
+- `number` The number
+
+#### Returns:
+`boolean`
+
+#### isSafeInteger
+---
+##### Description:
+Detects if a number is an integer between the safe range of JavaScript for integers, starting from the smallest safe to the largest.
+
+##### Parameters:
+- `number` The number
+
+#### Returns:
+`boolean`
+
+#### baseToDecimal
+---
+##### Description:
+This method convert a number from any base to a decimal number.
+**See** the [`Documentation`](https://github.com/JossDev-Morales/number-converter.io#readme) for conversions
+
+##### Parameters:
+- `number` The number in som base
+- `radix` The base of the number
+
+#### Returns:
+`string` The converted number to decimal
+
+#### decimalToBase
+---
+##### Description:
+This method convert a decimal number to other base.
+**See** the [`Documentation`](https://github.com/JossDev-Morales/number-converter.io#readme) for conversions
+
+##### Parameters:
+- `number` The decimal number to convert
+- `radix` The base to convert the decimal number
+
+#### Returns:
+`string` The converted decimal number to other base 
 
 ## IsValidNumber
 as a plus, you got a function which lets you know if a number as a string is a valid representation, this same functionality is built into the class BigDecimal, feel free to use it to check if a number is valid to be used.
@@ -185,3 +412,13 @@ An `error` for each validation
 
 #### Return: 
 `boolean` True if it's a valid number
+
+## Releases Notes
+
+See the notes for this release [**`here`**](https://gist.github.com/JossDev-Morales/3d2f932c099e5015cca3f51e3a398f30)
+
+And, [**`here`**](https://gist.github.com/JossDev-Morales/d5d13bcfe8e2da957f3c5e9b311fd4f4) you cand find the notes for all versions.
+
+## License
+
+**bignumber.io** is [`MIT Licensed`](https://github.com/JossDev-Morales/bigNumbers.io/blob/main/LICENSE). 
