@@ -1,7 +1,14 @@
-# BigNumber.io [!['npm link'][npm-version]][npm-link]
+# BigNumber.io [!['npm link'][npm-version]][npm-link] !['downloads'][downloads] [!['license'][license-img]][license-link] [![Build Status](https://img.shields.io/travis/com/JossDev-Morales/bigNumbers.io?style=for-the-badge&color=0ed35c&logo=travis&label=BUILD%20%26%20TESTS)](https://app.travis-ci.com/github/JossDev-Morales/bigNumbers.io?serverType=git)  
 
 [npm-version]:https://img.shields.io/npm/v/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
 [npm-link]:ttps://www.npmjs.com/package/bignumber.io
+[downloads]:https://img.shields.io/npm/dt/bignumber.io?style=for-the-badge&logo=npm&color=%23cb0000
+[license-link]:'https://github.com/JossDev-Morales/bigNumbers.io/blob/main/LICENSE'
+[license-img]:https://img.shields.io/github/license/JossDev-Morales/bigNumbers.io?style=for-the-badge
+[git-img]:https://img.shields.io/badge/Git--hub-161b22?logo=github&style=social
+[git-link]:https://github.com/JossDev-Morales/bigNumbers.io
+[discord-img]:https://img.shields.io/badge/Discord-313338?logo=discord&style=social
+[discord-link]:https://discord.com/users/564970023479934977
 
 [Releases Notes](https://github.com/JossDev-Morales/bigNumbers.io#releases-notes)
 
