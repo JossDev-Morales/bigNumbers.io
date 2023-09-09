@@ -1,4 +1,4 @@
-const bigDecimal = require("../src/bigDecimalOps")
+const bigDecimal = require("../src/BigDecimalOps")
 function testing(value, be) {
     test(`should test ${value} to be ${be}`, () => {
         expect(value).toBe(be)
