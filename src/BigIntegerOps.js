@@ -60,7 +60,7 @@ class bigInteger {
      * @returns {bigInteger}
      */
     static fromOtherBase(number,base){
-        const basenumber= new converter(number,base)
+        const basenumber= new converter(number,String(base))
         return new this(basenumber.toDecimal())
     }
     /**
@@ -175,7 +175,7 @@ class bigInteger {
      * @returns {string} The current value as a string
      */
     Return(radix) {
-        const result = radix?new converter(this.#result.toString(),'10').toCustomBase(radix):this.#result.toString()
+        const result = radix?new converter(this.#result.toString(),'10').toCustomBase(String(radix)):this.#result.toString()
         return result
     }
     /**
@@ -195,14 +195,14 @@ class bigInteger {
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number Number to set the current value
-     * @param {string|number} radix The base of the number you will pass to convert it to decimal base
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix The base of the number you will pass to convert it to decimal base
      * @method SetBigInteger Set the current value with the number you pass as a parameter
      * @returns {bigInteger}
      */
     SetBigInteger(number,radix) {
-        const basenumber=radix? new converter(number,radix).toDecimal():number
+        const basenumber=radix? new converter(number,String(radix)).toDecimal():number
         if (String(basenumber).split('.')[1]) {
-            throw new Error(`The number ${basenumbernumber} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+            throw new Error(`The number ${basenumber} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
         this.#result = BigInt(basenumber)
         this.ClearRecord()
@@ -328,7 +328,7 @@ class bigInteger {
      * @returns 
      */
     static baseToDecimal(number,radix){
-        return new converter(number,radix).toDecimal()
+        return new converter(number,String(radix)).toDecimal()
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -337,7 +337,7 @@ class bigInteger {
      * @returns 
      */
     static decimalToBase(decimal,toRadix){
-        return new converter(decimal,'10').toCustomBase(toRadix)
+        return new converter(decimal,'10').toCustomBase(String(toRadix))
     }
 }
 module.exports = bigInteger
