@@ -1024,14 +1024,19 @@ var bigDecimal = /*#__PURE__*/function () {
         if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
           if (num1.ints.length > num2.ints.length) {
             return false;
-          } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+          } else if (num1.ints.length < num2.ints.length) {
+            return true;
+          }
+          if (num1.ints[0] > num2.ints[0]) {
             return false;
+          } else if (num1.ints[0] < num2.ints[0]) {
+            return true;
           } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
             var tempToReturn = false;
             var tempMark = false;
             num1.ints.forEach(function (digit, index) {
               if (digit !== num2.ints[index] && !tempMark) {
-                if (digit > num2.ints[index]) {
+                if (digit < num2.ints[index]) {
                   tempToReturn = true;
                   tempMark = true;
                 } else {
@@ -1040,14 +1045,10 @@ var bigDecimal = /*#__PURE__*/function () {
               }
             });
             if (tempToReturn) {
-              return false;
+              return tempToReturn;
             } else {
-              return true;
+              return false;
             }
-          } else {
-            if (num1.ints.length < num2.ints.length) {
-              return true;
-            } else return false;
           }
         } else {
           if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
@@ -1060,7 +1061,7 @@ var bigDecimal = /*#__PURE__*/function () {
               var _tempMark = false;
               num1.decimals.forEach(function (digit, index) {
                 if (digit !== num2.decimals[index] && !_tempMark) {
-                  if (digit > num2.decimals[index]) {
+                  if (digit < num2.decimals[index]) {
                     _tempToReturn = true;
                     _tempMark = true;
                   } else {
@@ -1069,9 +1070,9 @@ var bigDecimal = /*#__PURE__*/function () {
                 }
               });
               if (_tempToReturn) {
-                return false;
+                return _tempToReturn;
               } else {
-                return true;
+                return false;
               }
             }
           } else {
@@ -1082,9 +1083,14 @@ var bigDecimal = /*#__PURE__*/function () {
         if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
           if (num1.ints.length > num2.ints.length) {
             return true;
-          } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
+          } else if (num1.ints.length < num2.ints.length) {
+            return false;
+          }
+          if (num1.ints[0] > num2.ints[0]) {
             return true;
-          } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
+          } else if (num1.ints[0] < num2.ints[0]) {
+            return false;
+          } else if (num1.ints[0] == num2.ints[0]) {
             var _tempToReturn2 = false;
             var _tempMark2 = false;
             num1.ints.forEach(function (digit, index) {
@@ -1098,14 +1104,10 @@ var bigDecimal = /*#__PURE__*/function () {
               }
             });
             if (_tempToReturn2) {
-              return true;
+              return _tempToReturn2;
             } else {
               return false;
             }
-          } else {
-            if (num1.ints.length < num2.ints.length) {
-              return false;
-            } else return true;
           }
         } else {
           if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
