@@ -22,8 +22,6 @@ function _classApplyDescriptorSet(receiver, descriptor, value) { if (descriptor.
 var _require = require("number-converter.io"),
   converter = _require.converter;
 var isValidNumber = require("./IsValidNumber");
-var _require2 = require("."),
-  BigDecimal = _require2.BigDecimal;
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -844,7 +842,7 @@ var bigDecimal = /*#__PURE__*/function () {
     key: "Return",
     value: function Return(radix) {
       /**@type {string} */
-      var result = radix ? new converter(_classPrivateFieldGet(this, _result), '10').toCustomBase(radix) : _classPrivateFieldGet(this, _result);
+      var result = radix ? new converter(_classPrivateFieldGet(this, _result), '10').toCustomBase(String(radix)) : _classPrivateFieldGet(this, _result);
       return result;
     }
     /**
@@ -869,14 +867,14 @@ var bigDecimal = /*#__PURE__*/function () {
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number 
-     * @param {string|number} radix the base of the number you will pass to convert it to decimal base
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the base of the number you will pass to convert it to decimal base
      * @method SetBigInteger set the current value with the number you pass as a parameter and delete records
      * @returns {bigDecimal}
      */
   }, {
     key: "SetBigDecimal",
     value: function SetBigDecimal(number, radix) {
-      var decimal = radix ? new converter(number, radix).toDecimal() : number;
+      var decimal = radix ? new converter(number, String(radix)).toDecimal() : number;
       isValidNumber(decimal);
       _classPrivateFieldSet(this, _result, decimal);
       this.ClearRecord();
@@ -913,7 +911,7 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "eq",
     value: function eq(number) {
-      return BigDecimal.isEqualTo(_classPrivateFieldGet(this, _result), number);
+      return bigDecimal.isEqualTo(_classPrivateFieldGet(this, _result), number);
     }
     /**
      * 
@@ -924,7 +922,7 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "gte",
     value: function gte(number) {
-      return BigDecimal.greaterOrEqualThan(_classPrivateFieldGet(this, _result), number);
+      return bigDecimal.greaterOrEqualThan(_classPrivateFieldGet(this, _result), number);
     }
     /**
      * 
@@ -935,7 +933,7 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "lte",
     value: function lte(number) {
-      return BigDecimal.lessOrEqualThan(_classPrivateFieldGet(this, _result), number);
+      return bigDecimal.lessOrEqualThan(_classPrivateFieldGet(this, _result), number);
     }
     /**
      * 
@@ -981,7 +979,7 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "fromOtherBase",
     value: function fromOtherBase(number, base) {
-      var basenumber = new converter(number, base);
+      var basenumber = new converter(number, String(base));
       return new this(basenumber.toDecimal());
     }
   }, {
@@ -1026,8 +1024,6 @@ var bigDecimal = /*#__PURE__*/function () {
         if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
           if (num1.ints.length > num2.ints.length) {
             return false;
-          } else if (num1.ints.length < num2.ints.length) {
-            return true;
           } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
             return false;
           } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
@@ -1049,17 +1045,17 @@ var bigDecimal = /*#__PURE__*/function () {
               return true;
             }
           } else {
-            return true;
+            if (num1.ints.length < num2.ints.length) {
+              return true;
+            } else return false;
           }
         } else {
           if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
-            if (num1.decimals[0] > num2.decimals[0]) {
-              return false;
-            } else if (num1.decimals[0] < num2.decimals[0]) {
+            if (num1.decimals[0] < num2.decimals[0]) {
               return true;
             } else if (num1.decimals[0] > num2.decimals[0]) {
               return false;
-            } else if (num1.decimals[0] = num2.decimals[0]) {
+            } else if (num1.decimals[0] == num2.decimals[0]) {
               var _tempToReturn = false;
               var _tempMark = false;
               num1.decimals.forEach(function (digit, index) {
@@ -1086,8 +1082,6 @@ var bigDecimal = /*#__PURE__*/function () {
         if (!this.isEqualTo(num1.ints.join(''), num2.ints.join(''))) {
           if (num1.ints.length > num2.ints.length) {
             return true;
-          } else if (num1.ints.length < num2.ints.length) {
-            return false;
           } else if (num1.ints.length == num2.ints.length && num1.ints[0] > num2.ints[0]) {
             return true;
           } else if (num1.ints.length == num2.ints.length && num1.ints[0] == num2.ints[0]) {
@@ -1109,7 +1103,9 @@ var bigDecimal = /*#__PURE__*/function () {
               return false;
             }
           } else {
-            return false;
+            if (num1.ints.length < num2.ints.length) {
+              return false;
+            } else return true;
           }
         } else {
           if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
@@ -1120,7 +1116,7 @@ var bigDecimal = /*#__PURE__*/function () {
               return false;
             } else if (num1.decimals[0] > num2.decimals[0]) {
               return true;
-            } else if (num1.decimals[0] = num2.decimals[0]) {
+            } else if (num1.decimals[0] == num2.decimals[0]) {
               var _tempToReturn3 = false;
               var _tempMark3 = false;
               num1.decimals.forEach(function (digit, index) {
@@ -1195,17 +1191,16 @@ var bigDecimal = /*#__PURE__*/function () {
       if (num1.ints.join('') === num2.ints.join('') && num1.decimals.join('') === num2.decimals.join('')) {
         return true;
       } else {
-        console.log();
         return false;
       }
     }
     /**
-         * 
-         * @param {string|number} number1 
-         * @param {string|number} number2 
-         * @returns {boolean}
-         * @method greaterOrEqualThan Compare the first parameter with the second to find out if the first parameter is greater than or equal to the second parameter.
-         */
+     * 
+     * @param {string|number} number1 
+     * @param {string|number} number2 
+     * @returns {boolean}
+     * @method greaterOrEqualThan Compare the first parameter with the second to find out if the first parameter is greater than or equal to the second parameter.
+     */
   }, {
     key: "greaterOrEqualThan",
     value: function greaterOrEqualThan(number1, number2) {
@@ -1294,7 +1289,7 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "baseToDecimal",
     value: function baseToDecimal(number, radix) {
-      return new converter(number, radix).toDecimal();
+      return new converter(number, String(radix)).toDecimal();
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -1306,10 +1301,9 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "decimalToBase",
     value: function decimalToBase(decimal, toRadix) {
-      return new converter(decimal, '10').toCustomBase(toRadix);
+      return new converter(decimal, '10').toCustomBase(String(toRadix));
     }
   }]);
   return bigDecimal;
 }();
-console.log(bigDecimal.fromBinary('1101'));
 module.exports = bigDecimal;

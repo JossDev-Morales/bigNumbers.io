@@ -1,5 +1,5 @@
-const bigDecimal = require("./BigDecimalOps");
-const bigInteger = require("./BigIntegerOps");
+const bigDecimal = require("./BigDecimalOps.js");
+const bigInteger = require("./BigIntegerOps.js");
 const IsValidNumber = require("./IsValidNumber")
 
 

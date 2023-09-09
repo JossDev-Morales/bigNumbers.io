@@ -206,7 +206,7 @@ var bigInteger = /*#__PURE__*/function () {
   }, {
     key: "Return",
     value: function Return(radix) {
-      var result = radix ? new converter(_classPrivateFieldGet(this, _result).toString(), '10').toCustomBase(radix) : _classPrivateFieldGet(this, _result).toString();
+      var result = radix ? new converter(_classPrivateFieldGet(this, _result).toString(), '10').toCustomBase(String(radix)) : _classPrivateFieldGet(this, _result).toString();
       return result;
     }
     /**
@@ -230,16 +230,16 @@ var bigInteger = /*#__PURE__*/function () {
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {string|number} number Number to set the current value
-     * @param {string|number} radix The base of the number you will pass to convert it to decimal base
+     * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix The base of the number you will pass to convert it to decimal base
      * @method SetBigInteger Set the current value with the number you pass as a parameter
      * @returns {bigInteger}
      */
   }, {
     key: "SetBigInteger",
     value: function SetBigInteger(number, radix) {
-      var basenumber = radix ? new converter(number, radix).toDecimal() : number;
+      var basenumber = radix ? new converter(number, String(radix)).toDecimal() : number;
       if (String(basenumber).split('.')[1]) {
-        throw new Error("The number ".concat(basenumbernumber, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
+        throw new Error("The number ".concat(basenumber, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
       }
       _classPrivateFieldSet(this, _result, BigInt(basenumber));
       this.ClearRecord();
@@ -344,7 +344,7 @@ var bigInteger = /*#__PURE__*/function () {
   }, {
     key: "fromOtherBase",
     value: function fromOtherBase(number, base) {
-      var basenumber = new converter(number, base);
+      var basenumber = new converter(number, String(base));
       return new this(basenumber.toDecimal());
     }
   }, {
@@ -433,7 +433,7 @@ var bigInteger = /*#__PURE__*/function () {
   }, {
     key: "baseToDecimal",
     value: function baseToDecimal(number, radix) {
-      return new converter(number, radix).toDecimal();
+      return new converter(number, String(radix)).toDecimal();
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -444,7 +444,7 @@ var bigInteger = /*#__PURE__*/function () {
   }, {
     key: "decimalToBase",
     value: function decimalToBase(decimal, toRadix) {
-      return new converter(decimal, '10').toCustomBase(toRadix);
+      return new converter(decimal, '10').toCustomBase(String(toRadix));
     }
   }]);
   return bigInteger;
