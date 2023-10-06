@@ -11,11 +11,11 @@ function isValidNumber(number) {
     if (typeof number !== typeof String()) {
         throw new Error('Invalid parameter')
     }
-    //We validate that a number does not have a negative input sign, if it is positive, it should only be ignored, if you use "+" it will be treated as a rare character.
-    if (number.split('').some(num => num === '-')) {
+    //We validate that a number does not have a positive input sign, if it is positive, it should only be ignored, if you use "+" it will be treated as a rare character.
+    if (number.split('').some(num => num === '+')) {
         throw new CustomError({
             name: 'Invalid sign',
-            message: 'Negative sign are not allowed',
+            message: 'Positive sign are not allowed',
             number
         })
     }
@@ -30,7 +30,7 @@ function isValidNumber(number) {
     }
     //We validate that it does not have rare characters in the string for decimal numbers
     if (number.split('.')[1]) {
-        if (number.split('.')[0].split('').some((number => isNaN(number))) || number.split('.')[1].split('').some((number => isNaN(number)))) {
+        if (number.split('.')[0].split('').some((number => number==='-'?false:isNaN(number))) || number.split('.')[1].split('').some((number => isNaN(number)))) {
             throw new CustomError({
                 name: 'Invalid characters',
                 message: 'non-numeric characters found',
@@ -40,7 +40,7 @@ function isValidNumber(number) {
         }
     } else {
         //We validate that it does not have rare characters in the string for non-decimal numbers
-        if (number.split('').some(number => isNaN(number))) {
+        if (number.split('').some(number => number==='-'?false:isNaN(number))) {
             throw new CustomError({
                 name: 'Invalid characters',
                 message: 'non-numeric characters found',
