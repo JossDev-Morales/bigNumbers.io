@@ -1,5 +1,8 @@
 const { converter } = require("number-converter.io")
 const isValidNumber = require("./IsValidNumber")
+const getComposition = require("./getComposition")
+const CustomError = require("./CustomError")
+const isPeriodic = require("./periodicDecimalFinder")
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -12,19 +15,43 @@ const isValidNumber = require("./IsValidNumber")
 class bigDecimal {
     #result = null
     #record = null
+    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
+    #conf = Object
     /**
      * BigDecimal constructor
      * @param {string | number} initilizedResult 
+     * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
      * @returns {bigDecimal} The initilized BigDecimal
      * @public
      */
-    constructor(initilizedResult) {
+    constructor(initilizedResult, confs) {
         isValidNumber(String(initilizedResult))
         this.#result = String(initilizedResult)
         this.#record = {
             currentValue: 0,
             operations: []
         }
+        this.#conf = {
+            maxDecimals: Infinity,
+            periodicDecimalsLimit:50,
+            infinitSaver:500,
+            divideByZero: {
+                return:Infinity,
+                error: {
+                    throw: false,
+                    message: 'You cant divide a dividend by divisor zero'
+                }
+            }
+        }
+        Object.keys(confs||{}).forEach(key=>{
+            if (typeof confs[key]==='object') {
+                Object.keys(confs[key]).forEach(key2=>{
+                    this.#conf[key][key2]=confs[key][key2]
+                })
+            }else{
+                this.#conf[key]=confs[key]
+            }
+        })
     }
     /**
     * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -66,95 +93,180 @@ class bigDecimal {
     /**
      * 
      * @param {string | number} stringDecimal number to add to the current value
+     * @param {{justReturn,number2}} conf confs, dont touch it HAHA
      * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
      */
-    Addition(stringDecimal, secondStringDecimal, createRecord = false) {
+    Addition(stringDecimal, conf) {
         isValidNumber(String(stringDecimal))
-        if (secondStringDecimal) {
-            isValidNumber(String(secondStringDecimal))
+        if (conf?.number2) {
+            isValidNumber(String(conf.number2))
         }
         const from = this.#result
-        const number1 = {
-            ints: String(stringDecimal).split('.')[0].split('').reverse(),
-            decimals: String(stringDecimal).split('.')[1]?.split('').reverse() || ['0']
+        const numbers = {
+            n1: conf?.number2 ? getComposition(String(conf?.number2)) : getComposition(this.#result),
+            n2: getComposition(String(stringDecimal))
         }
-        const number2 = {
-            ints: String(secondStringDecimal || this.#result).split('.')[0].split('').reverse(),
-            decimals: String(secondStringDecimal || this.#result).split('.')[1]?.split('').reverse() || ['0']
-        }
-        let carry = 0
-        let decimals = []
-        let ints = []
-        if (number1.decimals && number2.decimals) {
-            if (number1.decimals.length >= number2.decimals.length) {
-                number2.decimals.reverse()
-                number1.decimals.forEach((decimal, index) => {
-                    let addition = Number(decimal) + Number(number2.decimals[number1.decimals.length - 1 - index] ?? 0)
-                    if (addition + carry >= 10) {
-                        decimals.push(addition - 10 + carry)
-                        carry = 1
-                    } else {
-                        decimals.push(addition + carry)
-                        carry = 0
-                    }
-                })
-            } else {
-                number1.decimals.reverse()
-                number2.decimals.forEach((decimal, index) => {
-                    let addition = Number(decimal) + Number(number1.decimals[(number2.decimals.length - 1) - index] ?? 0)
-                    if (addition + carry >= 10) {
-                        decimals.push(addition - 10 + carry)
-                        carry = 1
-                    } else {
-                        decimals.push(addition + carry)
-                        carry = 0
-                    }
-                })
+        const result = [[], [], []]
+        //some one of the two numbers are negative
+        if ((numbers.n1.sign === '-' && numbers.n2.sign === '') || (numbers.n1.sign === '' && numbers.n2.sign === '-')) {
+            let negative = numbers.n1.sign === '-' ? 1 : 2
+            let willbenegative = negative === 1 ? bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete)
+            let biger = willbenegative ? negative === 1 ? 1 : 2 : negative === 1 ? 2 : 1
+            let smaller = willbenegative ? negative === 1 ? 2 : 1 : negative === 1 ? 1 : 2
+            let decimalWillbenegative = negative === 1 ? bigDecimal.greaterThan('0.' + numbers.n1.decimals.join(''), '0.' + numbers.n2.decimals.join('')) : bigDecimal.greaterThan('0.' + numbers.n2.decimals.join(''), '0.' + numbers.n1.decimals.join(''))
+            let decimalBigger = decimalWillbenegative ? negative === 1 ? 1 : 2 : negative === 1 ? 2 : 1
+            let decimalSmaller = decimalWillbenegative ? negative === 1 ? 2 : 1 : negative === 1 ? 1 : 2
+            let carry = 0
+            if (willbenegative) {
+                result[0] = '-'
             }
-        }
-        if (number1.ints.length >= number2.ints.length) {
-            number1.ints.forEach((int, index) => {
-                let addition = Number(int) + Number(number2.ints[index] ?? 0)
-                if (addition + carry >= 10) {
-                    ints.push(addition - 10 + carry)
+            if (numbers.n1.decimals.length != numbers.n2.decimals.length) {
+                let greaterLength = Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length)
+                while (numbers.n1.decimals.length < greaterLength) {
+                    numbers.n1.decimals.push(0)
+                }
+                while (numbers.n2.decimals.length < greaterLength) {
+                    numbers.n2.decimals.push(0)
+                }
+            }
+            numbers.n1.decimals.reverse(); numbers.n2.decimals.reverse()
+            numbers['n' + decimalBigger].decimals.forEach((digit, index) => {
+                let number1 = Number(digit)
+                let number2 = Number(numbers['n' + decimalSmaller].decimals[index])
+                let subtraction = number1 - number2 - carry
+                if (subtraction < 0) {
+                    subtraction = subtraction + 10
                     carry = 1
-                    if (number1.ints.length - 1 === index) {
-                        ints.push(1)
-                    }
                 } else {
-                    ints.push(addition + carry)
                     carry = 0
                 }
+                result[2].push(subtraction)
             })
-        } else {
-            number2.ints.forEach((int, index) => {
-                let addition = Number(parseInt(int) + carry) + Number(number1.ints[index] ?? 0)
-                if (addition >= 10) {
-                    ints.push(parseInt(addition) - 10)
+            result[2] = result[2].reverse()
+            numbers.n1.ints.reverse(); numbers.n2.ints.reverse()
+            numbers['n' + biger].ints.forEach((digit, index) => {
+                let number1 = Number(digit)
+                let number2 = Number(numbers['n' + smaller].ints[index] || 0)
+                let subtraction = number1 - number2 - carry
+                if (subtraction < 0) {
+                    subtraction = subtraction + 10
                     carry = 1
-                    if (number2.ints.length - 1 === index) {
-                        ints.push(1)
+                } else {
+                    carry = 0
+                }
+                result[1].push(subtraction)
+            })
+            carry = 0
+            result[1] = result[1].reverse()
+            while (result[1][0] == 0 && result[1].length > 1) {
+                result[1].shift()
+            }
+            if (!willbenegative && decimalWillbenegative) {
+                let decimalslength = result[2].length
+                result[1][result[1].length - 1] = result[1][result[1].length - 1] - 1
+                let takeCarry = [1]
+                for (let i = 0; i < decimalslength; i++) {
+                    takeCarry.push(0)
+                }
+                let subresult = []
+                result[2].reverse()
+                takeCarry.reverse().forEach((digit, index) => {
+                    let number1 = Number(digit)
+                    let number2 = Number(result[2][index] || 0)
+                    let subtraction = number1 - number2 - carry
+                    if (subtraction < 0) {
+                        subtraction = subtraction + 10
+                        carry = 1
+                    } else {
+                        carry = 0
+                    }
+                    subresult.push(subtraction)
+                })
+                while (subresult[subresult.length - 1] === 0) {
+                    subresult.pop()
+                }
+                subresult.reverse()
+                result[2] = subresult
+            }
+            result[1].reverse()
+        } else {
+            if (numbers.n1.sign === '-' && numbers.n2.sign === '-') {
+                result[0] = '-'
+            }
+            let carry = 0
+            if (numbers.n1.decimals.length != numbers.n2.decimals.length) {
+                let greaterLength = Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length)
+                while (numbers.n1.decimals.length < greaterLength) {
+                    numbers.n1.decimals.push(0)
+                }
+                while (numbers.n2.decimals.length < greaterLength) {
+                    numbers.n2.decimals.push(0)
+                }
+            }
+            if (numbers.n1.ints.length != numbers.n2.ints.length) {
+                let greaterLength = Math.max(numbers.n1.ints.length, numbers.n2.ints.length)
+                while (numbers.n1.ints.length < greaterLength) {
+                    numbers.n1.ints.unshift(0)
+                }
+                while (numbers.n2.ints.length < greaterLength) {
+                    numbers.n2.ints.unshift(0)
+                }
+            }
+            numbers.n1.decimals.reverse(); numbers.n2.decimals.reverse()
+            numbers.n1.decimals.forEach((digit, index) => {
+                let number1 = Number(digit)
+                let number2 = Number(numbers.n2.decimals[index])
+                let addition = number1 + number2 + carry
+                if (addition > 9) {
+                    addition = addition - 10
+                    carry = 1
+                } else {
+                    carry = 0
+                }
+                result[2].push(addition)
+            })
+            result[2] = result[2].reverse()
+            numbers.n1.ints.reverse(); numbers.n2.ints.reverse()
+            numbers.n1.ints.forEach((digit, index) => {
+                let number1 = Number(digit)
+                let number2 = Number(numbers.n2.ints[index] || 0)
+                let addition = number1 + number2 + carry
+                let push = true
+                if (addition > 9) {
+                    if (numbers.n1.ints[index + 1] != undefined) {
+                        addition = addition - 10
+                        carry = 1
+                    } else {
+                        push = false
+                        result[1] = [result[1], addition].flat()
                     }
                 } else {
-                    ints.push(addition)
                     carry = 0
+                }
+                if (push) {
+                    result[1].push(addition)
                 }
             })
         }
-        while (decimals.length > 1 && decimals[0] == 0) {
-            decimals.shift();
+        result[1] = result[1].reverse()
+        while (result[1][0] === 0) {
+            result[1].shift()
         }
-        if (decimals.every(decimal => decimal === 0)) {
-            this.#result = ints.reverse().join('')
-        } else if (decimals.length == 1 && decimals[0] == 0) {
-            this.#result = ints.reverse().join('')
+        if (result[1][0] === undefined) {
+            result[1].push(0)
+        }
+        while (result[2][result[2].length - 1] === 0) {
+            result[2].pop()
+        }
+        if (conf?.justReturn) {
+            return `${result[0]}${result[1].join('')}${result[2].length === 0 ? '' : '.'}${result[2].length === 0 ? '' : result[2].join('')}`
         } else {
-            this.#result = ints.reverse().join('') + '.' + decimals.reverse().join('')
-        }
-        if (!createRecord) {
+            this.#result = `${result[0]}${result[1].join('')}${result[2].length === 0 ? '' : '.'}${result[2].length === 0 ? '' : result[2].join('')}`
             this.#record.operations.push({ type: 'Addition', from, adding: stringDecimal, result: this.#result })
+            return this
         }
-        return this
+
+
     }
     /**
      * 
@@ -163,87 +275,7 @@ class bigDecimal {
      * @returns {string} the result of the operation as a string
      */
     ReturnAddition(stringDecimal) {
-        isValidNumber(String(stringDecimal))
-
-
-        const number1 = {
-            ints: String(stringDecimal).split('.')[0].split('').reverse(),
-            decimals: String(stringDecimal).split('.')[1]?.split('').reverse() || ['0']
-        }
-        const number2 = {
-            ints: String(this.#result).split('.')[0].split('').reverse(),
-            decimals: String(this.#result).split('.')[1]?.split('').reverse() || ['0']
-        }
-        let carry = 0
-        let decimals = []
-        let ints = []
-        if (number1.decimals && number2.decimals) {
-            if (number1.decimals.length >= number2.decimals.length) {
-                number2.decimals.reverse()
-                number1.decimals.forEach((decimal, index) => {
-                    let addition = Number(decimal) + Number(number2.decimals[number1.decimals.length - 1 - index] ?? 0)
-                    if (addition + carry >= 10) {
-                        decimals.push(addition - 10 + carry)
-                        carry = 1
-                    } else {
-                        decimals.push(addition + carry)
-                        carry = 0
-                    }
-                })
-            } else {
-                number1.decimals.reverse()
-                number2.decimals.forEach((decimal, index) => {
-                    let addition = Number(decimal) + Number(number1.decimals[(number2.decimals.length - 1) - index] ?? 0)
-                    if (addition + carry >= 10) {
-                        decimals.push(addition - 10 + carry)
-                        carry = 1
-                    } else {
-                        decimals.push(addition + carry)
-                        carry = 0
-                    }
-                })
-            }
-        }
-        if (number1.ints.length >= number2.ints.length) {
-            number1.ints.forEach((int, index) => {
-                let addition = Number(int) + Number(number2.ints[index] ?? 0)
-                if (addition + carry >= 10) {
-                    ints.push(addition - 10 + carry)
-                    carry = 1
-                    if (number1.ints.length - 1 === index) {
-                        ints.push(1)
-                    }
-                } else {
-                    ints.push(addition + carry)
-                    carry = 0
-                }
-            })
-        } else {
-            number2.ints.forEach((int, index) => {
-                let addition = Number(int) + Number(number1.ints[index] ?? 0)
-                if (addition + carry >= 10) {
-                    ints.push(addition - 10 + carry)
-                    carry = 1
-                    if (number1.ints.length - 1 === index) {
-                        ints.push(1)
-                    }
-                } else {
-                    ints.push(addition + carry)
-                    carry = 0
-                }
-            })
-        }
-        while (decimals.length > 1 && decimals[0] == 0) {
-            decimals.shift();
-        }
-        let result
-        if (decimals.every(decimal => decimal === 0)) {
-            result = ints.reverse().join('')
-        } else if (decimals.length == 1 && decimals[0] == 0) {
-            result = ints.reverse().join('')
-        } else {
-            result = ints.reverse().join('') + '.' + decimals.reverse().join('')
-        }
+        const result = this.Addition(stringDecimal, { justReturn: true })
         return result
     }
     /**
@@ -253,236 +285,8 @@ class bigDecimal {
 
      */
     Subtraction(string1) {
-        isValidNumber(String(string1))
         const from = this.#result
-        const minuendo = {
-            ints: String(this.#result).split('.')[0].split(''),
-            decimals: String(this.#result).split('.')[1]?.split('') || [0]
-        }
-        const sustraendo = {
-            ints: String(string1).split('.')[0].split(''),
-            decimals: String(string1).split('.')[1]?.split('') ?? [0]
-        }
-        let isNegative = false
-        let decimalIsNegative = false
-        let carry = 0
-        let intsResult = []
-        let decimalsResult = []
-        const negativeChecker = (value1, value2) => {
-            let maxLenght = Math.max(value1?.length || minuendo.ints.length, value2?.length || sustraendo.ints.length)
-            const minu = value1 || minuendo.ints
-            const sust = value2 || sustraendo.ints
-            for (let i = 0; i < maxLenght; i++) {
-                const minuDigit = minu[i] || 0
-                const sustDigit = sust[i] || 0
-                if (i === 0 && minuDigit < sustDigit) {
-                    return true
-                }
-                if (minuDigit < sustDigit) {
-                    return true
-                }
-                if (minuDigit > sustDigit) {
-                    return false
-                }
-                if (i === maxLenght - 1 && minuDigit === sustDigit) {
-                    return false
-                }
-            }
-            return true
-        }
-        if (minuendo.ints.length < sustraendo.ints.length || (minuendo.ints.length === sustraendo.ints.length && Number(minuendo.ints[0]) < Number(sustraendo.ints[0])) || (minuendo.ints.length === sustraendo.ints.length && negativeChecker())) {
-            isNegative = true
-        }
-        if (minuendo.decimals.length < sustraendo.decimals.length) {
-            let decimals = minuendo.decimals
-            decimals.push(0)
-            if (negativeChecker(decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        } else if (minuendo.decimals.length > sustraendo.decimals.length) {
-            let decimals = minuendo.decimals
-            decimals.push(0)
-            if (negativeChecker(decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        } else {
-            if (negativeChecker(minuendo.decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        }
-        minuendo.ints.reverse(); minuendo.decimals.reverse()
-        sustraendo.ints.reverse(); sustraendo.decimals.reverse()
-        let length = Math.max(minuendo.ints.length, sustraendo.ints.length) - Math.min(minuendo.ints.length, sustraendo.ints.length)
-        for (let i = 0; i < length; i++) {
-            if (minuendo.ints.length >= sustraendo.ints.length) {
-                sustraendo.ints.push(0)
-            } else {
-                minuendo.ints.push(0)
-            }
-        }
-        let decimalLength = Math.max(minuendo.decimals.length, sustraendo.decimals.length) - Math.min(minuendo.decimals.length, sustraendo.decimals.length)
-        for (let i = 0; i < decimalLength; i++) {
-            if (minuendo.decimals.length >= sustraendo.decimals.length) {
-                sustraendo.decimals.push(0)
-            } else {
-                minuendo.decimals.push(0)
-            }
-        }
-        minuendo.decimals.forEach((decimal, index) => {
-            if (decimalIsNegative) {
-                let operation = Number(parseInt(sustraendo.decimals[index] - carry) - Number(decimal))
-                if (operation < 0) {
-                    operation = Number(parseInt(sustraendo.decimals[index]) + 10 - carry) - Number(decimal)
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                decimalsResult.push(operation)
-            } else {
-                let operation = Number(parseInt(decimal) - carry) - Number(sustraendo.decimals[index])
-                if (operation < 0) {
-                    operation = Number(parseInt(decimal) + 10 - carry) - Number(sustraendo.decimals[index])
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                decimalsResult.push(operation)
-            }
-        })
-        minuendo.ints.forEach((integer, index) => {
-            if (isNegative) {
-                let operation = Number(parseInt(sustraendo.ints[index]) - carry) - Number(integer)
-                if (operation < 0) {
-                    operation = Number(parseInt(sustraendo.ints[index]) + 10 - carry) - Number(parseInt(integer))
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                intsResult.push(operation)
-            } else {
-                let operation = Number(parseInt(integer) - carry) - Number(sustraendo.ints[index])
-                if (operation < 0) {
-                    operation = Number(parseInt(integer) + 10 - carry) - Number(sustraendo.ints[index])
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                intsResult.push(operation)
-            }
-        })
-        let result = undefined
-
-        if (decimalIsNegative == false && isNegative) {
-            let int = undefined
-            let decimal = decimalsResult
-            let numOfDecimals = decimalsResult.length
-            let overCarry = 0
-            let temp = []
-            intsResult.forEach((integer, index) => {
-                if (!int && integer !== 0) {
-                    overCarry = index
-                    int = integer
-                    for (let i = 0; i < index; i++) {
-                        int = Number(int + '0')
-                        decimal = [0, ...decimal]
-                    }
-                }
-            })
-            for (let i = 0; i < numOfDecimals; i++) {
-                int = Number(int + '0')
-                decimal = [0, ...decimal]
-            }
-            int = int.toString().split('')
-            int.reverse(); decimal.reverse()
-            let carry = 0
-            int.forEach((integer, index) => {
-                let operation = Number(parseInt(integer) - carry) - Number(decimal[index])
-                if (operation < 0) {
-                    if (int[index + 1] !== undefined) {
-                        operation = Number(parseInt(integer) + 10 - carry) - Number(decimal[index])
-                        carry = 1
-                    }
-                } else {
-                    carry = 0
-                }
-                temp.push(operation)
-            })
-            let resultsForInts = temp.slice(numOfDecimals).reverse()
-            let resultsForDecimals = temp.slice(0, numOfDecimals)
-            let resultLenght = intsResult.length
-            intsResult.reverse()
-            intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''))
-            intsResult.reverse()
-            decimalsResult = resultsForDecimals
-        }
-        if (isNegative == false && decimalIsNegative) {
-            let int = undefined
-            let decimal = decimalsResult.reverse()
-            let numOfDecimals = decimalsResult.length
-            let overCarry = 0
-            let temp = []
-            intsResult.forEach((integer, index) => {
-                if (!int && integer !== 0) {
-                    overCarry = index
-                    int = integer
-                    for (let i = 0; i < index; i++) {
-                        int = Number(int + '0')
-                        decimal = [0, ...decimal]
-                    }
-                }
-                if (!int && index == intsResult.length - 1 && integer == 0) {
-                    int = integer
-                }
-            })
-            for (let i = 0; i < numOfDecimals; i++) {
-                int = Number(int + '0')
-                decimal = [0, ...decimal]
-            }
-            int = int.toString().split('')
-            int.reverse(); decimal.reverse()
-            let carry = 0
-            if (Number(int) !== 0) {
-                int.forEach((integer, index) => {
-                    let operation = Number(parseInt(integer) - carry) - Number(decimal[index])
-                    if (operation < 0) {
-                        if (int[index + 1] !== undefined) {
-                            operation = Number(parseInt(integer) + 10 - carry) - Number(decimal[index])
-                            carry = 1
-                        }
-                    } else {
-                        carry = 0
-                    }
-                    temp.push(operation)
-                })
-                let resultsForInts = temp.slice(numOfDecimals).reverse()
-                let resultsForDecimals = temp.slice(0, numOfDecimals)
-                let resultLenght = intsResult.length
-                while (resultsForInts.length > 1 && resultsForInts[0] == 0) {
-                    resultsForInts.shift();
-                }
-                intsResult.reverse()
-                intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''))
-                intsResult.reverse()
-                decimalsResult = resultsForDecimals
-            } else {
-                isNegative = true
-            }
-        }
-        while (intsResult.length > 1 && intsResult[intsResult.length - 1] == 0) {
-            intsResult.pop();
-        }
-        while (decimalsResult.length >= 1 && decimalsResult[0] == 0) {
-            decimalsResult.shift()
-        }
-        if (isNegative) {
-            intsResult.push('-')
-        }
-
-        if (decimalsResult.every(decimal => decimal == 0) || decimalsResult.length === 0) {
-            result = intsResult.reverse().join('')
-        } else {
-            result = intsResult.reverse().join('') + '.' + decimalsResult.reverse().join('')
-        }
+        const result = this.ReturnSubtraction(string1)
         this.#result = result
         this.#record.operations.push({ type: 'Subtraction', from, subtracting: string1, result: this.#result })
         return this
@@ -494,234 +298,22 @@ class bigDecimal {
      * @returns {string} the result of the operation as a string 
      */
     ReturnSubtraction(string1) {
-        isValidNumber(String(string1))
-        const minuendo = {
-            ints: String(this.#result).split('.')[0].split(''),
-            decimals: String(this.#result).split('.')[1]?.split('') || [0]
+        const numbers = {
+            n1: getComposition(this.#result),
+            n2: getComposition(String(string1))
         }
-        const sustraendo = {
-            ints: String(string1).split('.')[0].split(''),
-            decimals: String(string1).split('.')[1]?.split('') ?? [0]
-        }
-        let isNegative = false
-        let decimalIsNegative = false
-        let carry = 0
-        let intsResult = []
-        let decimalsResult = []
-        const negativeChecker = (value1, value2) => {
-            let maxLenght = Math.max(value1?.length || minuendo.ints.length, value2?.length || sustraendo.ints.length)
-            const minu = value1 || minuendo.ints
-            const sust = value2 || sustraendo.ints
-            for (let i = 0; i < maxLenght; i++) {
-                const minuDigit = minu[i] || 0
-                const sustDigit = sust[i] || 0
-                if (i === 0 && minuDigit < sustDigit) {
-                    return true
-                }
-                if (minuDigit < sustDigit) {
-                    return true
-                }
-                if (minuDigit > sustDigit) {
-                    return false
-                }
-                if (i === maxLenght - 1 && minuDigit === sustDigit) {
-                    return false
-                }
-            }
-            return true
-        }
-        if (minuendo.ints.length < sustraendo.ints.length || (minuendo.ints.length === sustraendo.ints.length && Number(minuendo.ints[0]) < Number(sustraendo.ints[0])) || (minuendo.ints.length === sustraendo.ints.length && negativeChecker())) {
-            isNegative = true
-        }
-        if (minuendo.decimals.length < sustraendo.decimals.length) {
-            let decimals = minuendo.decimals
-            decimals.push(0)
-            if (negativeChecker(decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        } else if (minuendo.decimals.length > sustraendo.decimals.length) {
-            let decimals = minuendo.decimals
-            decimals.push(0)
-            if (negativeChecker(decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        } else {
-            if (negativeChecker(minuendo.decimals, sustraendo.decimals)) {
-                decimalIsNegative = true
-            }
-        }
-        minuendo.ints.reverse(); minuendo.decimals.reverse()
-        sustraendo.ints.reverse(); sustraendo.decimals.reverse()
-        let length = Math.max(minuendo.ints.length, sustraendo.ints.length) - Math.min(minuendo.ints.length, sustraendo.ints.length)
-        for (let i = 0; i < length; i++) {
-            if (minuendo.ints.length >= sustraendo.ints.length) {
-                sustraendo.ints.push(0)
-            } else {
-                minuendo.ints.push(0)
-            }
-        }
-        let decimalLength = Math.max(minuendo.decimals.length, sustraendo.decimals.length) - Math.min(minuendo.decimals.length, sustraendo.decimals.length)
-        for (let i = 0; i < decimalLength; i++) {
-            if (minuendo.decimals.length >= sustraendo.decimals.length) {
-                sustraendo.decimals.push(0)
-            } else {
-                minuendo.decimals.push(0)
-            }
-        }
-        minuendo.decimals.forEach((decimal, index) => {
-            if (decimalIsNegative) {
-                let operation = Number(parseInt(sustraendo.decimals[index] - carry) - Number(decimal))
-                if (operation < 0) {
-                    operation = Number(parseInt(sustraendo.decimals[index]) + 10 - carry) - Number(decimal)
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                decimalsResult.push(operation)
-            } else {
-                let operation = Number(parseInt(decimal) - carry) - Number(sustraendo.decimals[index])
-                if (operation < 0) {
-                    operation = Number(parseInt(decimal) + 10 - carry) - Number(sustraendo.decimals[index])
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                decimalsResult.push(operation)
-            }
-        })
-        minuendo.ints.forEach((integer, index) => {
-            if (isNegative) {
-                let operation = Number(parseInt(sustraendo.ints[index]) - carry) - Number(integer)
-                if (operation < 0) {
-                    operation = Number(parseInt(sustraendo.ints[index]) + 10 - carry) - Number(parseInt(integer))
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                intsResult.push(operation)
-            } else {
-                let operation = Number(parseInt(integer) - carry) - Number(sustraendo.ints[index])
-                if (operation < 0) {
-                    operation = Number(parseInt(integer) + 10 - carry) - Number(sustraendo.ints[index])
-                    carry = 1
-                } else {
-                    carry = 0
-                }
-                intsResult.push(operation)
-            }
-        })
-        let result = undefined
+        let result
+        if ((numbers.n1.sign === '-' && numbers.n2.sign === '') || (numbers.n1.sign === '' && numbers.n2.sign === '-')) {
+            let sign = numbers.n1.sign === '-' ? '-' : ''
+            result = `${sign}${this.Addition(numbers.n1.complete, { justReturn: true, number2: numbers.n2.complete })}`
 
-        if (decimalIsNegative == false && isNegative) {
-            let int = undefined
-            let decimal = decimalsResult
-            let numOfDecimals = decimalsResult.length
-            let overCarry = 0
-            let temp = []
-            intsResult.forEach((integer, index) => {
-                if (!int && integer !== 0) {
-                    overCarry = index
-                    int = integer
-                    for (let i = 0; i < index; i++) {
-                        int = Number(int + '0')
-                        decimal = [0, ...decimal]
-                    }
-                }
-            })
-            for (let i = 0; i < numOfDecimals; i++) {
-                int = Number(int + '0')
-                decimal = [0, ...decimal]
-            }
-            int = int.toString().split('')
-            int.reverse(); decimal.reverse()
-            let carry = 0
-            int.forEach((integer, index) => {
-                let operation = Number(parseInt(integer) - carry) - Number(decimal[index])
-                if (operation < 0) {
-                    if (int[index + 1] !== undefined) {
-                        operation = Number(parseInt(integer) + 10 - carry) - Number(decimal[index])
-                        carry = 1
-                    }
-                } else {
-                    carry = 0
-                }
-                temp.push(operation)
-            })
-            let resultsForInts = temp.slice(numOfDecimals).reverse()
-            let resultsForDecimals = temp.slice(0, numOfDecimals)
-            let resultLenght = intsResult.length
-            intsResult.reverse()
-            intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''))
-            intsResult.reverse()
-            decimalsResult = resultsForDecimals
-        }
-        if (isNegative == false && decimalIsNegative) {
-            let int = undefined
-            let decimal = decimalsResult.reverse()
-            let numOfDecimals = decimalsResult.length
-            let overCarry = 0
-            let temp = []
-            intsResult.forEach((integer, index) => {
-                if (!int && integer !== 0) {
-                    overCarry = index
-                    int = integer
-                    for (let i = 0; i < index; i++) {
-                        int = Number(int + '0')
-                        decimal = [0, ...decimal]
-                    }
-                }
-                if (!int && index == intsResult.length - 1 && integer == 0) {
-                    int = integer
-                }
-            })
-            for (let i = 0; i < numOfDecimals; i++) {
-                int = Number(int + '0')
-                decimal = [0, ...decimal]
-            }
-            int = int.toString().split('')
-            int.reverse(); decimal.reverse()
-            let carry = 0
-            if (Number(int) !== 0) {
-                int.forEach((integer, index) => {
-                    let operation = Number(parseInt(integer) - carry) - Number(decimal[index])
-                    if (operation < 0) {
-                        if (int[index + 1] !== undefined) {
-                            operation = Number(parseInt(integer) + 10 - carry) - Number(decimal[index])
-                            carry = 1
-                        }
-                    } else {
-                        carry = 0
-                    }
-                    temp.push(operation)
-                })
-                let resultsForInts = temp.slice(numOfDecimals).reverse()
-                let resultsForDecimals = temp.slice(0, numOfDecimals)
-                let resultLenght = intsResult.length
-                while (resultsForInts.length > 1 && resultsForInts[0] == 0) {
-                    resultsForInts.shift();
-                }
-                intsResult.reverse()
-                intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''))
-                intsResult.reverse()
-                decimalsResult = resultsForDecimals
-            } else {
-                isNegative = true
-            }
-        }
-        while (intsResult.length > 1 && intsResult[intsResult.length - 1] == 0) {
-            intsResult.pop();
-        }
-        while (decimalsResult.length >= 1 && decimalsResult[0] == 0) {
-            decimalsResult.shift()
-        }
-        if (isNegative) {
-            intsResult.push('-')
-        }
+        } else if (numbers.n1.sign === '-' && numbers.n2.sign === '-') {
+            let greaterNumber = bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) ? 1 : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete) ? 2 : 0
 
-        if (decimalsResult.every(decimal => decimal == 0) || decimalsResult.length === 0) {
-            result = intsResult.reverse().join('')
+            result = greaterNumber === 0 ? '0' : `${greaterNumber === 1 ? '-' : ''}${this.Addition(`${greaterNumber === 1 ? '' : '-'}${numbers.n1.complete}`, { justReturn: true, number2: `${greaterNumber === 1 ? '-' : ''}${numbers.n2.complete}` })}`
         } else {
-            result = intsResult.reverse().join('') + '.' + decimalsResult.reverse().join('')
+            let greaterNumber = bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) ? 1 : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete) ? 2 : 0
+            result = greaterNumber === 0 ? '0' : `${greaterNumber === 1 ? '' : greaterNumber === 2 ? '-' : ''}${this.Addition(`${greaterNumber === 1 ? '' : '-'}${numbers.n1.complete}`, { justReturn: true, number2: `${greaterNumber === 1 ? '-' : ''}${numbers.n2.complete}` })}`
         }
         return result
     }
@@ -731,24 +323,9 @@ class bigDecimal {
      * @method Multiplication multiplies two numbers, the number corresponding to the current value by the number you pass as a parameter to this method and sets the result of the operation as the current value
      */
     Multiplication(number) {
-        isValidNumber(String(number))
-        const from = this.#result
-        const decimalsCount = this.#result.split('.')[1]?.length || 0 + String(number).split('.')[1]?.length || 0
-        const mult = (number, factor) => {
-            let tempNumber = factor || this.#result
-            let tempResult = factor || this.#result//5
-            for (let i = 1; i < Number(number); i++) {
-                tempResult = this.Addition(tempResult, tempNumber, true).Return()
-            }
-            return tempResult
-        }
-        if (String(number).split('.').length == 2) {
-            const factor = String(number).split('.')
-            let Operation = mult(factor.join(''), this.#result.split('.').join(''))
-            this.#result = Operation.slice(0, Operation.length - decimalsCount) + '.' + Operation.slice(Operation.length - decimalsCount)
-        } else {
-            this.#result = mult(number)
-        }
+        let from = this.#result
+        const result = this.ReturnMultiplication(number)
+        this.#result = result
         this.#record.operations.push({ type: 'Multiplication', from, by: number, result: this.#result })
         return this
     }
@@ -761,21 +338,90 @@ class bigDecimal {
     ReturnMultiplication(number) {
         isValidNumber(String(number))
         const decimalsCount = this.#result.split('.')[1]?.length || 0 + String(number).split('.')[1]?.length || 0
+        const numbers = {
+            n1: getComposition(String(this.#result)),
+            n2: getComposition(String(number))
+        }
+        const sign = numbers.n1.sign === numbers.n2.sign ? '' : '-'
+        const result = [sign, '']
         const mult = (number, factor) => {
-            let tempNumber = factor || this.#result
-            let tempResult = factor || this.#result//5
-            for (let i = 1; i < Number(number); i++) {
-                tempResult = this.Addition(tempResult, tempNumber, true).Return()
+            let result = (BigInt(number) * BigInt(factor)).toString()
+            return result
+        }
+        let num1 = numbers.n1.decimals.some(digit => digit != 0) ? numbers.n1.complete.split('.').join('') : numbers.n1.ints.join('')
+        let num2 = numbers.n2.decimals.some(digit => digit != 0) ? numbers.n2.complete.split('.').join('') : numbers.n2.ints.join('')
+        let Operation = mult(num1, num2)
+        result[1] = numbers.n1.decimals.some(digit => digit != '0') || numbers.n2.decimals.some(digit => digit != '0') ? `${Operation.slice(0, Operation.length - decimalsCount)}${Operation.slice(Operation.length - decimalsCount).split('').some(digit => digit !== '0') ? '.' + Operation.slice(Operation.length - decimalsCount) : ''}` : Operation
+        return result.join('')
+    }
+    Division(number){
+        let from=this.#result
+        this.#result=this.ReturnDivision(number)
+        this.#record.operations.push({type:'Division',from,by:number,result:this.#result})
+        return this
+    }
+    ReturnDivision(number) {
+        const numbers = {
+            n1: getComposition(String(this.#result)),
+            n2: getComposition(String(number))
+        }
+        if (numbers.n1.complete === '0.0'  || numbers.n2.complete === '0.0') {
+            if (this.#conf.divideByZero.error.throw) {
+                let divideByZero=new CustomError({name:'DivideByZero',message:this.#conf.divideByZero.error.message||'You cant divide a dividend by divisor zero'})
+                throw divideByZero
             }
-            return tempResult
+            if (this.#conf.divideByZero.return) {
+                return this.#conf.divideByZero.return
+            }else{
+                return Infinity
+            }
+            
         }
-        if (String(number).split('.').length == 2) {
-            const factor = String(number).split('.')
-            let Operation = mult(factor.join(''), this.#result.split('.').join(''))
-            return Operation.slice(0, Operation.length - decimalsCount) + '.' + Operation.slice(Operation.length - decimalsCount)
-        } else {
-            return mult(number)
+        // Manejo de signos
+        const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
+        let quotient = division(numbers.n1.complete, numbers.n2.complete)
+        let difference = new bigDecimal(getDiff(numbers.n1.complete, numbers.n2.complete, quotient))
+        let result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '',[]]
+        let reps = 0
+        let divisor = numbers.n2
+        while (bigDecimal.greaterThan(difference.Return(), 0) && (reps <= this.#conf.maxDecimals/2)) {
+            reps++
+            let amplificator = ['1', '0']
+            let differenceDecimalsLength = difference.Return().split('.')[1]?.length || 0
+            for (let i = 0; i < differenceDecimalsLength; i++) {
+                amplificator.push('0')
+            }
+            difference.Multiplication(amplificator.join(''))
+            let remainder
+            let decimalLength = divisor.decimals.length
+            if (divisor.decimals.some(digit => digit != '0')) {
+                let amplificator = ['1']
+                for (let i = 0; i < decimalLength; i++) {
+                    amplificator.push('0')
+                }
+                difference.Multiplication(amplificator.join(''))
+                let divisor = new bigDecimal(numbers.n2.complete).ReturnMultiplication(amplificator.join(''))
+                remainder = (BigInt(difference.Return()) / BigInt(divisor)).toString().split('')
+                difference = new bigDecimal(getDiff(difference.Return(), divisor, remainder.join('')))
+            } else {
+                remainder = division(difference.Return(),numbers.n2.ints.join('')).split('')
+                difference = new bigDecimal(getDiff(difference.Return(), numbers.n2.ints.join(''), remainder.join('')))
+            }
+            remainder = remainder.join('')
+            result[3].push(remainder)
+            if (this.#conf.maxDecimals===Infinity) {
+                let decimalsCount=result[3].join('').split('').length
+                if (decimalsCount>=this.#conf.periodicDecimalsLimit) {
+                    if (isPeriodic(result[3])) {
+                        break
+                    }
+                }
+                if (reps>=this.#conf.infinitSaver) {
+                    break
+                }
+            }
         }
+        return result.flat().join('')
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -910,8 +556,8 @@ class bigDecimal {
                     return false
                 } else if (num1.ints.length < num2.ints.length) {
                     return true
-                } 
-                
+                }
+
                 if (num1.ints[0] > num2.ints[0]) {
                     return false
                 } else if (num1.ints[0] < num2.ints[0]) {
@@ -936,7 +582,7 @@ class bigDecimal {
                     }
                 }
             } else {
-                if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+                if (!this.isEqualTo("0." + num1.decimals.join(''), "0." + num2.decimals.join(''))) {
                     if (num1.decimals[0] < num2.decimals[0]) {
                         return true
                     } else if (num1.decimals[0] > num2.decimals[0]) {
@@ -971,7 +617,7 @@ class bigDecimal {
                 } else if (num1.ints.length < num2.ints.length) {
                     return false
                 }
-     
+
                 if (num1.ints[0] > num2.ints[0]) {
                     return true
                 } else if (num1.ints[0] < num2.ints[0]) {
@@ -996,7 +642,7 @@ class bigDecimal {
                     }
                 }
             } else {
-                if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+                if (!this.isEqualTo("0." + num1.decimals.join(''), "0." + num2.decimals.join(''))) {
                     if (num1.decimals[0] > num2.decimals[0] ?? 0) {
                         return true
                     } else if (num1.decimals[0] < num2.decimals[0]) {
@@ -1170,5 +816,32 @@ class bigDecimal {
     static decimalToBase(decimal, toRadix) {
         return new converter(decimal, '10').toCustomBase(String(toRadix))
     }
+}
+function division(number1, number2) {
+    const numbers = {
+        n1: getComposition(String(number1)),
+        n2: getComposition(String(number2))
+    }
+    // Manejo de signos
+    // const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n1.sign === '-');
+    // Convierte dividendos y divisores en positivos para simplificar la división
+    let dividend = new bigDecimal(numbers.n1.complete)
+    let divisor = new bigDecimal(numbers.n2.complete)
+    let isDecimal = bigDecimal.isDecimal(numbers.n1.complete) || bigDecimal.isDecimal(numbers.n2.complete)
+    if (isDecimal) {
+        let greaterDecimalLength = numbers.n1.decimals.some(digit => digit != '0') || numbers.n2.decimals.some(digit => digit != '0') ? Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length) : 0
+        let amplificator = ['1']
+        for (let i = 0; i < greaterDecimalLength; i++) {
+            amplificator.push('0')
+        }
+        dividend = BigInt(dividend.Multiplication(amplificator.join('')).Return())
+        divisor = BigInt(divisor.Multiplication(amplificator.join('')).Return())
+    }
+    let result = dividend / divisor
+    return result.toString()
+}
+function getDiff(dividend, divisor, quotient) {
+    let difference = new bigDecimal(dividend).Subtraction(new bigDecimal(divisor).ReturnMultiplication(quotient))
+    return difference.Return()
 }
 module.exports = bigDecimal
