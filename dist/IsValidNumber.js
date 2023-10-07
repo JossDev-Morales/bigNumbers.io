@@ -14,13 +14,13 @@ function isValidNumber(number) {
   if (_typeof(number) !== _typeof(String())) {
     throw new Error('Invalid parameter');
   }
-  //We validate that a number does not have a negative input sign, if it is positive, it should only be ignored, if you use "+" it will be treated as a rare character.
+  //We validate that a number does not have a positive input sign, if it is positive, it should only be ignored, if you use "+" it will be treated as a rare character.
   if (number.split('').some(function (num) {
-    return num === '-';
+    return num === '+';
   })) {
     throw new CustomError({
       name: 'Invalid sign',
-      message: 'Negative sign are not allowed',
+      message: 'Positive sign are not allowed',
       number: number
     });
   }
@@ -36,7 +36,7 @@ function isValidNumber(number) {
   //We validate that it does not have rare characters in the string for decimal numbers
   if (number.split('.')[1]) {
     if (number.split('.')[0].split('').some(function (number) {
-      return isNaN(number);
+      return number === '-' ? false : isNaN(number);
     }) || number.split('.')[1].split('').some(function (number) {
       return isNaN(number);
     })) {
@@ -57,7 +57,7 @@ function isValidNumber(number) {
   } else {
     //We validate that it does not have rare characters in the string for non-decimal numbers
     if (number.split('').some(function (number) {
-      return isNaN(number);
+      return number === '-' ? false : isNaN(number);
     })) {
       throw new CustomError({
         name: 'Invalid characters',

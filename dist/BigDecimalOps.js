@@ -1,12 +1,6 @@
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
@@ -22,6 +16,9 @@ function _classApplyDescriptorSet(receiver, descriptor, value) { if (descriptor.
 var _require = require("number-converter.io"),
   converter = _require.converter;
 var isValidNumber = require("./IsValidNumber");
+var getComposition = require("./getComposition");
+var CustomError = require("./CustomError");
+var isPeriodic = require("./periodicDecimalFinder");
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -33,14 +30,17 @@ var isValidNumber = require("./IsValidNumber");
  */
 var _result = /*#__PURE__*/new WeakMap();
 var _record = /*#__PURE__*/new WeakMap();
+var _conf = /*#__PURE__*/new WeakMap();
 var bigDecimal = /*#__PURE__*/function () {
   /**
    * BigDecimal constructor
    * @param {string | number} initilizedResult 
+   * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
    * @returns {bigDecimal} The initilized BigDecimal
    * @public
    */
-  function bigDecimal(initilizedResult) {
+  function bigDecimal(initilizedResult, confs) {
+    var _this = this;
     _classCallCheck(this, bigDecimal);
     _classPrivateFieldInitSpec(this, _result, {
       writable: true,
@@ -50,11 +50,37 @@ var bigDecimal = /*#__PURE__*/function () {
       writable: true,
       value: null
     });
+    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
+    _classPrivateFieldInitSpec(this, _conf, {
+      writable: true,
+      value: Object
+    });
     isValidNumber(String(initilizedResult));
     _classPrivateFieldSet(this, _result, String(initilizedResult));
     _classPrivateFieldSet(this, _record, {
       currentValue: 0,
       operations: []
+    });
+    _classPrivateFieldSet(this, _conf, {
+      maxDecimals: Infinity,
+      periodicDecimalsLimit: 50,
+      infinitSaver: 500,
+      divideByZero: {
+        "return": Infinity,
+        error: {
+          "throw": false,
+          message: 'You cant divide a dividend by divisor zero'
+        }
+      }
+    });
+    Object.keys(confs || {}).forEach(function (key) {
+      if (_typeof(confs[key]) === 'object') {
+        Object.keys(confs[key]).forEach(function (key2) {
+          _classPrivateFieldGet(_this, _conf)[key][key2] = confs[key][key2];
+        });
+      } else {
+        _classPrivateFieldGet(_this, _conf)[key] = confs[key];
+      }
     });
   }
   /**
@@ -68,108 +94,187 @@ var bigDecimal = /*#__PURE__*/function () {
     /**
      * 
      * @param {string | number} stringDecimal number to add to the current value
+     * @param {{justReturn,number2}} conf confs, dont touch it HAHA
      * @method Addition adds two numbers, the number corresponding to the current value plus the one you pass as a parameter to this method and sets the result of the operation as the current value
      */
-    function Addition(stringDecimal, secondStringDecimal) {
-      var _String$split$, _String$split$2;
-      var createRecord = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    function Addition(stringDecimal, conf) {
       isValidNumber(String(stringDecimal));
-      if (secondStringDecimal) {
-        isValidNumber(String(secondStringDecimal));
+      if (conf !== null && conf !== void 0 && conf.number2) {
+        isValidNumber(String(conf.number2));
       }
       var from = _classPrivateFieldGet(this, _result);
-      var number1 = {
-        ints: String(stringDecimal).split('.')[0].split('').reverse(),
-        decimals: ((_String$split$ = String(stringDecimal).split('.')[1]) === null || _String$split$ === void 0 ? void 0 : _String$split$.split('').reverse()) || ['0']
+      var numbers = {
+        n1: conf !== null && conf !== void 0 && conf.number2 ? getComposition(String(conf === null || conf === void 0 ? void 0 : conf.number2)) : getComposition(_classPrivateFieldGet(this, _result)),
+        n2: getComposition(String(stringDecimal))
       };
-      var number2 = {
-        ints: String(secondStringDecimal || _classPrivateFieldGet(this, _result)).split('.')[0].split('').reverse(),
-        decimals: ((_String$split$2 = String(secondStringDecimal || _classPrivateFieldGet(this, _result)).split('.')[1]) === null || _String$split$2 === void 0 ? void 0 : _String$split$2.split('').reverse()) || ['0']
-      };
-      var carry = 0;
-      var decimals = [];
-      var ints = [];
-      if (number1.decimals && number2.decimals) {
-        if (number1.decimals.length >= number2.decimals.length) {
-          number2.decimals.reverse();
-          number1.decimals.forEach(function (decimal, index) {
-            var _number2$decimals;
-            var addition = Number(decimal) + Number((_number2$decimals = number2.decimals[number1.decimals.length - 1 - index]) !== null && _number2$decimals !== void 0 ? _number2$decimals : 0);
-            if (addition + carry >= 10) {
-              decimals.push(addition - 10 + carry);
-              carry = 1;
-            } else {
-              decimals.push(addition + carry);
-              carry = 0;
-            }
-          });
-        } else {
-          number1.decimals.reverse();
-          number2.decimals.forEach(function (decimal, index) {
-            var _number1$decimals;
-            var addition = Number(decimal) + Number((_number1$decimals = number1.decimals[number2.decimals.length - 1 - index]) !== null && _number1$decimals !== void 0 ? _number1$decimals : 0);
-            if (addition + carry >= 10) {
-              decimals.push(addition - 10 + carry);
-              carry = 1;
-            } else {
-              decimals.push(addition + carry);
-              carry = 0;
-            }
-          });
+      var result = [[], [], []];
+      //some one of the two numbers are negative
+      if (numbers.n1.sign === '-' && numbers.n2.sign === '' || numbers.n1.sign === '' && numbers.n2.sign === '-') {
+        var negative = numbers.n1.sign === '-' ? 1 : 2;
+        var willbenegative = negative === 1 ? bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete);
+        var biger = willbenegative ? negative === 1 ? 1 : 2 : negative === 1 ? 2 : 1;
+        var smaller = willbenegative ? negative === 1 ? 2 : 1 : negative === 1 ? 1 : 2;
+        var decimalWillbenegative = negative === 1 ? bigDecimal.greaterThan('0.' + numbers.n1.decimals.join(''), '0.' + numbers.n2.decimals.join('')) : bigDecimal.greaterThan('0.' + numbers.n2.decimals.join(''), '0.' + numbers.n1.decimals.join(''));
+        var decimalBigger = decimalWillbenegative ? negative === 1 ? 1 : 2 : negative === 1 ? 2 : 1;
+        var decimalSmaller = decimalWillbenegative ? negative === 1 ? 2 : 1 : negative === 1 ? 1 : 2;
+        var carry = 0;
+        if (willbenegative) {
+          result[0] = '-';
         }
-      }
-      if (number1.ints.length >= number2.ints.length) {
-        number1.ints.forEach(function (_int, index) {
-          var _number2$ints$index;
-          var addition = Number(_int) + Number((_number2$ints$index = number2.ints[index]) !== null && _number2$ints$index !== void 0 ? _number2$ints$index : 0);
-          if (addition + carry >= 10) {
-            ints.push(addition - 10 + carry);
+        if (numbers.n1.decimals.length != numbers.n2.decimals.length) {
+          var greaterLength = Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length);
+          while (numbers.n1.decimals.length < greaterLength) {
+            numbers.n1.decimals.push(0);
+          }
+          while (numbers.n2.decimals.length < greaterLength) {
+            numbers.n2.decimals.push(0);
+          }
+        }
+        numbers.n1.decimals.reverse();
+        numbers.n2.decimals.reverse();
+        numbers['n' + decimalBigger].decimals.forEach(function (digit, index) {
+          var number1 = Number(digit);
+          var number2 = Number(numbers['n' + decimalSmaller].decimals[index]);
+          var subtraction = number1 - number2 - carry;
+          if (subtraction < 0) {
+            subtraction = subtraction + 10;
             carry = 1;
-            if (number1.ints.length - 1 === index) {
-              ints.push(1);
-            }
           } else {
-            ints.push(addition + carry);
             carry = 0;
           }
+          result[2].push(subtraction);
         });
-      } else {
-        number2.ints.forEach(function (_int2, index) {
-          var _number1$ints$index;
-          var addition = Number(parseInt(_int2) + carry) + Number((_number1$ints$index = number1.ints[index]) !== null && _number1$ints$index !== void 0 ? _number1$ints$index : 0);
-          if (addition >= 10) {
-            ints.push(parseInt(addition) - 10);
+        result[2] = result[2].reverse();
+        numbers.n1.ints.reverse();
+        numbers.n2.ints.reverse();
+        numbers['n' + biger].ints.forEach(function (digit, index) {
+          var number1 = Number(digit);
+          var number2 = Number(numbers['n' + smaller].ints[index] || 0);
+          var subtraction = number1 - number2 - carry;
+          if (subtraction < 0) {
+            subtraction = subtraction + 10;
             carry = 1;
-            if (number2.ints.length - 1 === index) {
-              ints.push(1);
+          } else {
+            carry = 0;
+          }
+          result[1].push(subtraction);
+        });
+        carry = 0;
+        result[1] = result[1].reverse();
+        while (result[1][0] == 0 && result[1].length > 1) {
+          result[1].shift();
+        }
+        if (!willbenegative && decimalWillbenegative) {
+          var decimalslength = result[2].length;
+          result[1][result[1].length - 1] = result[1][result[1].length - 1] - 1;
+          var takeCarry = [1];
+          for (var i = 0; i < decimalslength; i++) {
+            takeCarry.push(0);
+          }
+          var subresult = [];
+          result[2].reverse();
+          takeCarry.reverse().forEach(function (digit, index) {
+            var number1 = Number(digit);
+            var number2 = Number(result[2][index] || 0);
+            var subtraction = number1 - number2 - carry;
+            if (subtraction < 0) {
+              subtraction = subtraction + 10;
+              carry = 1;
+            } else {
+              carry = 0;
+            }
+            subresult.push(subtraction);
+          });
+          while (subresult[subresult.length - 1] === 0) {
+            subresult.pop();
+          }
+          subresult.reverse();
+          result[2] = subresult;
+        }
+        result[1].reverse();
+      } else {
+        if (numbers.n1.sign === '-' && numbers.n2.sign === '-') {
+          result[0] = '-';
+        }
+        var _carry = 0;
+        if (numbers.n1.decimals.length != numbers.n2.decimals.length) {
+          var _greaterLength = Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length);
+          while (numbers.n1.decimals.length < _greaterLength) {
+            numbers.n1.decimals.push(0);
+          }
+          while (numbers.n2.decimals.length < _greaterLength) {
+            numbers.n2.decimals.push(0);
+          }
+        }
+        if (numbers.n1.ints.length != numbers.n2.ints.length) {
+          var _greaterLength2 = Math.max(numbers.n1.ints.length, numbers.n2.ints.length);
+          while (numbers.n1.ints.length < _greaterLength2) {
+            numbers.n1.ints.unshift(0);
+          }
+          while (numbers.n2.ints.length < _greaterLength2) {
+            numbers.n2.ints.unshift(0);
+          }
+        }
+        numbers.n1.decimals.reverse();
+        numbers.n2.decimals.reverse();
+        numbers.n1.decimals.forEach(function (digit, index) {
+          var number1 = Number(digit);
+          var number2 = Number(numbers.n2.decimals[index]);
+          var addition = number1 + number2 + _carry;
+          if (addition > 9) {
+            addition = addition - 10;
+            _carry = 1;
+          } else {
+            _carry = 0;
+          }
+          result[2].push(addition);
+        });
+        result[2] = result[2].reverse();
+        numbers.n1.ints.reverse();
+        numbers.n2.ints.reverse();
+        numbers.n1.ints.forEach(function (digit, index) {
+          var number1 = Number(digit);
+          var number2 = Number(numbers.n2.ints[index] || 0);
+          var addition = number1 + number2 + _carry;
+          var push = true;
+          if (addition > 9) {
+            if (numbers.n1.ints[index + 1] != undefined) {
+              addition = addition - 10;
+              _carry = 1;
+            } else {
+              push = false;
+              result[1] = [result[1], addition].flat();
             }
           } else {
-            ints.push(addition);
-            carry = 0;
+            _carry = 0;
+          }
+          if (push) {
+            result[1].push(addition);
           }
         });
       }
-      while (decimals.length > 1 && decimals[0] == 0) {
-        decimals.shift();
+      result[1] = result[1].reverse();
+      while (result[1][0] === 0) {
+        result[1].shift();
       }
-      if (decimals.every(function (decimal) {
-        return decimal === 0;
-      })) {
-        _classPrivateFieldSet(this, _result, ints.reverse().join(''));
-      } else if (decimals.length == 1 && decimals[0] == 0) {
-        _classPrivateFieldSet(this, _result, ints.reverse().join(''));
+      if (result[1][0] === undefined) {
+        result[1].push(0);
+      }
+      while (result[2][result[2].length - 1] === 0) {
+        result[2].pop();
+      }
+      if (conf !== null && conf !== void 0 && conf.justReturn) {
+        return "".concat(result[0]).concat(result[1].join('')).concat(result[2].length === 0 ? '' : '.').concat(result[2].length === 0 ? '' : result[2].join(''));
       } else {
-        _classPrivateFieldSet(this, _result, ints.reverse().join('') + '.' + decimals.reverse().join(''));
-      }
-      if (!createRecord) {
+        _classPrivateFieldSet(this, _result, "".concat(result[0]).concat(result[1].join('')).concat(result[2].length === 0 ? '' : '.').concat(result[2].length === 0 ? '' : result[2].join('')));
         _classPrivateFieldGet(this, _record).operations.push({
           type: 'Addition',
           from: from,
           adding: stringDecimal,
           result: _classPrivateFieldGet(this, _result)
         });
+        return this;
       }
-      return this;
     }
     /**
      * 
@@ -180,92 +285,9 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "ReturnAddition",
     value: function ReturnAddition(stringDecimal) {
-      var _String$split$3, _String$split$4;
-      isValidNumber(String(stringDecimal));
-      var number1 = {
-        ints: String(stringDecimal).split('.')[0].split('').reverse(),
-        decimals: ((_String$split$3 = String(stringDecimal).split('.')[1]) === null || _String$split$3 === void 0 ? void 0 : _String$split$3.split('').reverse()) || ['0']
-      };
-      var number2 = {
-        ints: String(_classPrivateFieldGet(this, _result)).split('.')[0].split('').reverse(),
-        decimals: ((_String$split$4 = String(_classPrivateFieldGet(this, _result)).split('.')[1]) === null || _String$split$4 === void 0 ? void 0 : _String$split$4.split('').reverse()) || ['0']
-      };
-      var carry = 0;
-      var decimals = [];
-      var ints = [];
-      if (number1.decimals && number2.decimals) {
-        if (number1.decimals.length >= number2.decimals.length) {
-          number2.decimals.reverse();
-          number1.decimals.forEach(function (decimal, index) {
-            var _number2$decimals2;
-            var addition = Number(decimal) + Number((_number2$decimals2 = number2.decimals[number1.decimals.length - 1 - index]) !== null && _number2$decimals2 !== void 0 ? _number2$decimals2 : 0);
-            if (addition + carry >= 10) {
-              decimals.push(addition - 10 + carry);
-              carry = 1;
-            } else {
-              decimals.push(addition + carry);
-              carry = 0;
-            }
-          });
-        } else {
-          number1.decimals.reverse();
-          number2.decimals.forEach(function (decimal, index) {
-            var _number1$decimals2;
-            var addition = Number(decimal) + Number((_number1$decimals2 = number1.decimals[number2.decimals.length - 1 - index]) !== null && _number1$decimals2 !== void 0 ? _number1$decimals2 : 0);
-            if (addition + carry >= 10) {
-              decimals.push(addition - 10 + carry);
-              carry = 1;
-            } else {
-              decimals.push(addition + carry);
-              carry = 0;
-            }
-          });
-        }
-      }
-      if (number1.ints.length >= number2.ints.length) {
-        number1.ints.forEach(function (_int3, index) {
-          var _number2$ints$index2;
-          var addition = Number(_int3) + Number((_number2$ints$index2 = number2.ints[index]) !== null && _number2$ints$index2 !== void 0 ? _number2$ints$index2 : 0);
-          if (addition + carry >= 10) {
-            ints.push(addition - 10 + carry);
-            carry = 1;
-            if (number1.ints.length - 1 === index) {
-              ints.push(1);
-            }
-          } else {
-            ints.push(addition + carry);
-            carry = 0;
-          }
-        });
-      } else {
-        number2.ints.forEach(function (_int4, index) {
-          var _number1$ints$index2;
-          var addition = Number(_int4) + Number((_number1$ints$index2 = number1.ints[index]) !== null && _number1$ints$index2 !== void 0 ? _number1$ints$index2 : 0);
-          if (addition + carry >= 10) {
-            ints.push(addition - 10 + carry);
-            carry = 1;
-            if (number1.ints.length - 1 === index) {
-              ints.push(1);
-            }
-          } else {
-            ints.push(addition + carry);
-            carry = 0;
-          }
-        });
-      }
-      while (decimals.length > 1 && decimals[0] == 0) {
-        decimals.shift();
-      }
-      var result;
-      if (decimals.every(function (decimal) {
-        return decimal === 0;
-      })) {
-        result = ints.reverse().join('');
-      } else if (decimals.length == 1 && decimals[0] == 0) {
-        result = ints.reverse().join('');
-      } else {
-        result = ints.reverse().join('') + '.' + decimals.reverse().join('');
-      }
+      var result = this.Addition(stringDecimal, {
+        justReturn: true
+      });
       return result;
     }
     /**
@@ -276,241 +298,8 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "Subtraction",
     value: function Subtraction(string1) {
-      var _String$split$5, _String$split$1$split, _String$split$6;
-      isValidNumber(String(string1));
       var from = _classPrivateFieldGet(this, _result);
-      var minuendo = {
-        ints: String(_classPrivateFieldGet(this, _result)).split('.')[0].split(''),
-        decimals: ((_String$split$5 = String(_classPrivateFieldGet(this, _result)).split('.')[1]) === null || _String$split$5 === void 0 ? void 0 : _String$split$5.split('')) || [0]
-      };
-      var sustraendo = {
-        ints: String(string1).split('.')[0].split(''),
-        decimals: (_String$split$1$split = (_String$split$6 = String(string1).split('.')[1]) === null || _String$split$6 === void 0 ? void 0 : _String$split$6.split('')) !== null && _String$split$1$split !== void 0 ? _String$split$1$split : [0]
-      };
-      var isNegative = false;
-      var decimalIsNegative = false;
-      var carry = 0;
-      var intsResult = [];
-      var decimalsResult = [];
-      var negativeChecker = function negativeChecker(value1, value2) {
-        var maxLenght = Math.max((value1 === null || value1 === void 0 ? void 0 : value1.length) || minuendo.ints.length, (value2 === null || value2 === void 0 ? void 0 : value2.length) || sustraendo.ints.length);
-        var minu = value1 || minuendo.ints;
-        var sust = value2 || sustraendo.ints;
-        for (var i = 0; i < maxLenght; i++) {
-          var minuDigit = minu[i] || 0;
-          var sustDigit = sust[i] || 0;
-          if (i === 0 && minuDigit < sustDigit) {
-            return true;
-          }
-          if (minuDigit < sustDigit) {
-            return true;
-          }
-          if (minuDigit > sustDigit) {
-            return false;
-          }
-          if (i === maxLenght - 1 && minuDigit === sustDigit) {
-            return false;
-          }
-        }
-        return true;
-      };
-      if (minuendo.ints.length < sustraendo.ints.length || minuendo.ints.length === sustraendo.ints.length && Number(minuendo.ints[0]) < Number(sustraendo.ints[0]) || minuendo.ints.length === sustraendo.ints.length && negativeChecker()) {
-        isNegative = true;
-      }
-      if (minuendo.decimals.length < sustraendo.decimals.length) {
-        var decimals = minuendo.decimals;
-        decimals.push(0);
-        if (negativeChecker(decimals, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
-      } else if (minuendo.decimals.length > sustraendo.decimals.length) {
-        var _decimals = minuendo.decimals;
-        _decimals.push(0);
-        if (negativeChecker(_decimals, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
-      } else {
-        if (negativeChecker(minuendo.decimals, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
-      }
-      minuendo.ints.reverse();
-      minuendo.decimals.reverse();
-      sustraendo.ints.reverse();
-      sustraendo.decimals.reverse();
-      var length = Math.max(minuendo.ints.length, sustraendo.ints.length) - Math.min(minuendo.ints.length, sustraendo.ints.length);
-      for (var i = 0; i < length; i++) {
-        if (minuendo.ints.length >= sustraendo.ints.length) {
-          sustraendo.ints.push(0);
-        } else {
-          minuendo.ints.push(0);
-        }
-      }
-      var decimalLength = Math.max(minuendo.decimals.length, sustraendo.decimals.length) - Math.min(minuendo.decimals.length, sustraendo.decimals.length);
-      for (var _i = 0; _i < decimalLength; _i++) {
-        if (minuendo.decimals.length >= sustraendo.decimals.length) {
-          sustraendo.decimals.push(0);
-        } else {
-          minuendo.decimals.push(0);
-        }
-      }
-      minuendo.decimals.forEach(function (decimal, index) {
-        if (decimalIsNegative) {
-          var operation = Number(parseInt(sustraendo.decimals[index] - carry) - Number(decimal));
-          if (operation < 0) {
-            operation = Number(parseInt(sustraendo.decimals[index]) + 10 - carry) - Number(decimal);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          decimalsResult.push(operation);
-        } else {
-          var _operation = Number(parseInt(decimal) - carry) - Number(sustraendo.decimals[index]);
-          if (_operation < 0) {
-            _operation = Number(parseInt(decimal) + 10 - carry) - Number(sustraendo.decimals[index]);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          decimalsResult.push(_operation);
-        }
-      });
-      minuendo.ints.forEach(function (integer, index) {
-        if (isNegative) {
-          var operation = Number(parseInt(sustraendo.ints[index]) - carry) - Number(integer);
-          if (operation < 0) {
-            operation = Number(parseInt(sustraendo.ints[index]) + 10 - carry) - Number(parseInt(integer));
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          intsResult.push(operation);
-        } else {
-          var _operation2 = Number(parseInt(integer) - carry) - Number(sustraendo.ints[index]);
-          if (_operation2 < 0) {
-            _operation2 = Number(parseInt(integer) + 10 - carry) - Number(sustraendo.ints[index]);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          intsResult.push(_operation2);
-        }
-      });
-      var result = undefined;
-      if (decimalIsNegative == false && isNegative) {
-        var _int5 = undefined;
-        var decimal = decimalsResult;
-        var numOfDecimals = decimalsResult.length;
-        var overCarry = 0;
-        var temp = [];
-        intsResult.forEach(function (integer, index) {
-          if (!_int5 && integer !== 0) {
-            overCarry = index;
-            _int5 = integer;
-            for (var _i2 = 0; _i2 < index; _i2++) {
-              _int5 = Number(_int5 + '0');
-              decimal = [0].concat(_toConsumableArray(decimal));
-            }
-          }
-        });
-        for (var _i3 = 0; _i3 < numOfDecimals; _i3++) {
-          _int5 = Number(_int5 + '0');
-          decimal = [0].concat(_toConsumableArray(decimal));
-        }
-        _int5 = _int5.toString().split('');
-        _int5.reverse();
-        decimal.reverse();
-        var _carry = 0;
-        _int5.forEach(function (integer, index) {
-          var operation = Number(parseInt(integer) - _carry) - Number(decimal[index]);
-          if (operation < 0) {
-            if (_int5[index + 1] !== undefined) {
-              operation = Number(parseInt(integer) + 10 - _carry) - Number(decimal[index]);
-              _carry = 1;
-            }
-          } else {
-            _carry = 0;
-          }
-          temp.push(operation);
-        });
-        var resultsForInts = temp.slice(numOfDecimals).reverse();
-        var resultsForDecimals = temp.slice(0, numOfDecimals);
-        var resultLenght = intsResult.length;
-        intsResult.reverse();
-        intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''));
-        intsResult.reverse();
-        decimalsResult = resultsForDecimals;
-      }
-      if (isNegative == false && decimalIsNegative) {
-        var _int6 = undefined;
-        var _decimal = decimalsResult.reverse();
-        var _numOfDecimals = decimalsResult.length;
-        var _overCarry = 0;
-        var _temp = [];
-        intsResult.forEach(function (integer, index) {
-          if (!_int6 && integer !== 0) {
-            _overCarry = index;
-            _int6 = integer;
-            for (var _i4 = 0; _i4 < index; _i4++) {
-              _int6 = Number(_int6 + '0');
-              _decimal = [0].concat(_toConsumableArray(_decimal));
-            }
-          }
-          if (!_int6 && index == intsResult.length - 1 && integer == 0) {
-            _int6 = integer;
-          }
-        });
-        for (var _i5 = 0; _i5 < _numOfDecimals; _i5++) {
-          _int6 = Number(_int6 + '0');
-          _decimal = [0].concat(_toConsumableArray(_decimal));
-        }
-        _int6 = _int6.toString().split('');
-        _int6.reverse();
-        _decimal.reverse();
-        var _carry2 = 0;
-        if (Number(_int6) !== 0) {
-          _int6.forEach(function (integer, index) {
-            var operation = Number(parseInt(integer) - _carry2) - Number(_decimal[index]);
-            if (operation < 0) {
-              if (_int6[index + 1] !== undefined) {
-                operation = Number(parseInt(integer) + 10 - _carry2) - Number(_decimal[index]);
-                _carry2 = 1;
-              }
-            } else {
-              _carry2 = 0;
-            }
-            _temp.push(operation);
-          });
-          var _resultsForInts = _temp.slice(_numOfDecimals).reverse();
-          var _resultsForDecimals = _temp.slice(0, _numOfDecimals);
-          var _resultLenght = intsResult.length;
-          while (_resultsForInts.length > 1 && _resultsForInts[0] == 0) {
-            _resultsForInts.shift();
-          }
-          intsResult.reverse();
-          intsResult.splice(_resultLenght - _overCarry - 1, _overCarry + 1, _resultsForInts.join(''));
-          intsResult.reverse();
-          decimalsResult = _resultsForDecimals;
-        } else {
-          isNegative = true;
-        }
-      }
-      while (intsResult.length > 1 && intsResult[intsResult.length - 1] == 0) {
-        intsResult.pop();
-      }
-      while (decimalsResult.length >= 1 && decimalsResult[0] == 0) {
-        decimalsResult.shift();
-      }
-      if (isNegative) {
-        intsResult.push('-');
-      }
-      if (decimalsResult.every(function (decimal) {
-        return decimal == 0;
-      }) || decimalsResult.length === 0) {
-        result = intsResult.reverse().join('');
-      } else {
-        result = intsResult.reverse().join('') + '.' + decimalsResult.reverse().join('');
-      }
+      var result = this.ReturnSubtraction(string1);
       _classPrivateFieldSet(this, _result, result);
       _classPrivateFieldGet(this, _record).operations.push({
         type: 'Subtraction',
@@ -529,239 +318,29 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "ReturnSubtraction",
     value: function ReturnSubtraction(string1) {
-      var _String$split$7, _String$split$1$split2, _String$split$8;
-      isValidNumber(String(string1));
-      var minuendo = {
-        ints: String(_classPrivateFieldGet(this, _result)).split('.')[0].split(''),
-        decimals: ((_String$split$7 = String(_classPrivateFieldGet(this, _result)).split('.')[1]) === null || _String$split$7 === void 0 ? void 0 : _String$split$7.split('')) || [0]
+      var numbers = {
+        n1: getComposition(_classPrivateFieldGet(this, _result)),
+        n2: getComposition(String(string1))
       };
-      var sustraendo = {
-        ints: String(string1).split('.')[0].split(''),
-        decimals: (_String$split$1$split2 = (_String$split$8 = String(string1).split('.')[1]) === null || _String$split$8 === void 0 ? void 0 : _String$split$8.split('')) !== null && _String$split$1$split2 !== void 0 ? _String$split$1$split2 : [0]
-      };
-      var isNegative = false;
-      var decimalIsNegative = false;
-      var carry = 0;
-      var intsResult = [];
-      var decimalsResult = [];
-      var negativeChecker = function negativeChecker(value1, value2) {
-        var maxLenght = Math.max((value1 === null || value1 === void 0 ? void 0 : value1.length) || minuendo.ints.length, (value2 === null || value2 === void 0 ? void 0 : value2.length) || sustraendo.ints.length);
-        var minu = value1 || minuendo.ints;
-        var sust = value2 || sustraendo.ints;
-        for (var i = 0; i < maxLenght; i++) {
-          var minuDigit = minu[i] || 0;
-          var sustDigit = sust[i] || 0;
-          if (i === 0 && minuDigit < sustDigit) {
-            return true;
-          }
-          if (minuDigit < sustDigit) {
-            return true;
-          }
-          if (minuDigit > sustDigit) {
-            return false;
-          }
-          if (i === maxLenght - 1 && minuDigit === sustDigit) {
-            return false;
-          }
-        }
-        return true;
-      };
-      if (minuendo.ints.length < sustraendo.ints.length || minuendo.ints.length === sustraendo.ints.length && Number(minuendo.ints[0]) < Number(sustraendo.ints[0]) || minuendo.ints.length === sustraendo.ints.length && negativeChecker()) {
-        isNegative = true;
-      }
-      if (minuendo.decimals.length < sustraendo.decimals.length) {
-        var decimals = minuendo.decimals;
-        decimals.push(0);
-        if (negativeChecker(decimals, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
-      } else if (minuendo.decimals.length > sustraendo.decimals.length) {
-        var _decimals2 = minuendo.decimals;
-        _decimals2.push(0);
-        if (negativeChecker(_decimals2, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
+      var result;
+      if (numbers.n1.sign === '-' && numbers.n2.sign === '' || numbers.n1.sign === '' && numbers.n2.sign === '-') {
+        var sign = numbers.n1.sign === '-' ? '-' : '';
+        result = "".concat(sign).concat(this.Addition(numbers.n1.complete, {
+          justReturn: true,
+          number2: numbers.n2.complete
+        }));
+      } else if (numbers.n1.sign === '-' && numbers.n2.sign === '-') {
+        var greaterNumber = bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) ? 1 : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete) ? 2 : 0;
+        result = greaterNumber === 0 ? '0' : "".concat(greaterNumber === 1 ? '-' : '').concat(this.Addition("".concat(greaterNumber === 1 ? '' : '-').concat(numbers.n1.complete), {
+          justReturn: true,
+          number2: "".concat(greaterNumber === 1 ? '-' : '').concat(numbers.n2.complete)
+        }));
       } else {
-        if (negativeChecker(minuendo.decimals, sustraendo.decimals)) {
-          decimalIsNegative = true;
-        }
-      }
-      minuendo.ints.reverse();
-      minuendo.decimals.reverse();
-      sustraendo.ints.reverse();
-      sustraendo.decimals.reverse();
-      var length = Math.max(minuendo.ints.length, sustraendo.ints.length) - Math.min(minuendo.ints.length, sustraendo.ints.length);
-      for (var i = 0; i < length; i++) {
-        if (minuendo.ints.length >= sustraendo.ints.length) {
-          sustraendo.ints.push(0);
-        } else {
-          minuendo.ints.push(0);
-        }
-      }
-      var decimalLength = Math.max(minuendo.decimals.length, sustraendo.decimals.length) - Math.min(minuendo.decimals.length, sustraendo.decimals.length);
-      for (var _i6 = 0; _i6 < decimalLength; _i6++) {
-        if (minuendo.decimals.length >= sustraendo.decimals.length) {
-          sustraendo.decimals.push(0);
-        } else {
-          minuendo.decimals.push(0);
-        }
-      }
-      minuendo.decimals.forEach(function (decimal, index) {
-        if (decimalIsNegative) {
-          var operation = Number(parseInt(sustraendo.decimals[index] - carry) - Number(decimal));
-          if (operation < 0) {
-            operation = Number(parseInt(sustraendo.decimals[index]) + 10 - carry) - Number(decimal);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          decimalsResult.push(operation);
-        } else {
-          var _operation3 = Number(parseInt(decimal) - carry) - Number(sustraendo.decimals[index]);
-          if (_operation3 < 0) {
-            _operation3 = Number(parseInt(decimal) + 10 - carry) - Number(sustraendo.decimals[index]);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          decimalsResult.push(_operation3);
-        }
-      });
-      minuendo.ints.forEach(function (integer, index) {
-        if (isNegative) {
-          var operation = Number(parseInt(sustraendo.ints[index]) - carry) - Number(integer);
-          if (operation < 0) {
-            operation = Number(parseInt(sustraendo.ints[index]) + 10 - carry) - Number(parseInt(integer));
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          intsResult.push(operation);
-        } else {
-          var _operation4 = Number(parseInt(integer) - carry) - Number(sustraendo.ints[index]);
-          if (_operation4 < 0) {
-            _operation4 = Number(parseInt(integer) + 10 - carry) - Number(sustraendo.ints[index]);
-            carry = 1;
-          } else {
-            carry = 0;
-          }
-          intsResult.push(_operation4);
-        }
-      });
-      var result = undefined;
-      if (decimalIsNegative == false && isNegative) {
-        var _int7 = undefined;
-        var decimal = decimalsResult;
-        var numOfDecimals = decimalsResult.length;
-        var overCarry = 0;
-        var temp = [];
-        intsResult.forEach(function (integer, index) {
-          if (!_int7 && integer !== 0) {
-            overCarry = index;
-            _int7 = integer;
-            for (var _i7 = 0; _i7 < index; _i7++) {
-              _int7 = Number(_int7 + '0');
-              decimal = [0].concat(_toConsumableArray(decimal));
-            }
-          }
-        });
-        for (var _i8 = 0; _i8 < numOfDecimals; _i8++) {
-          _int7 = Number(_int7 + '0');
-          decimal = [0].concat(_toConsumableArray(decimal));
-        }
-        _int7 = _int7.toString().split('');
-        _int7.reverse();
-        decimal.reverse();
-        var _carry3 = 0;
-        _int7.forEach(function (integer, index) {
-          var operation = Number(parseInt(integer) - _carry3) - Number(decimal[index]);
-          if (operation < 0) {
-            if (_int7[index + 1] !== undefined) {
-              operation = Number(parseInt(integer) + 10 - _carry3) - Number(decimal[index]);
-              _carry3 = 1;
-            }
-          } else {
-            _carry3 = 0;
-          }
-          temp.push(operation);
-        });
-        var resultsForInts = temp.slice(numOfDecimals).reverse();
-        var resultsForDecimals = temp.slice(0, numOfDecimals);
-        var resultLenght = intsResult.length;
-        intsResult.reverse();
-        intsResult.splice(resultLenght - overCarry - 1, overCarry + 1, resultsForInts.join(''));
-        intsResult.reverse();
-        decimalsResult = resultsForDecimals;
-      }
-      if (isNegative == false && decimalIsNegative) {
-        var _int8 = undefined;
-        var _decimal2 = decimalsResult.reverse();
-        var _numOfDecimals2 = decimalsResult.length;
-        var _overCarry2 = 0;
-        var _temp2 = [];
-        intsResult.forEach(function (integer, index) {
-          if (!_int8 && integer !== 0) {
-            _overCarry2 = index;
-            _int8 = integer;
-            for (var _i9 = 0; _i9 < index; _i9++) {
-              _int8 = Number(_int8 + '0');
-              _decimal2 = [0].concat(_toConsumableArray(_decimal2));
-            }
-          }
-          if (!_int8 && index == intsResult.length - 1 && integer == 0) {
-            _int8 = integer;
-          }
-        });
-        for (var _i10 = 0; _i10 < _numOfDecimals2; _i10++) {
-          _int8 = Number(_int8 + '0');
-          _decimal2 = [0].concat(_toConsumableArray(_decimal2));
-        }
-        _int8 = _int8.toString().split('');
-        _int8.reverse();
-        _decimal2.reverse();
-        var _carry4 = 0;
-        if (Number(_int8) !== 0) {
-          _int8.forEach(function (integer, index) {
-            var operation = Number(parseInt(integer) - _carry4) - Number(_decimal2[index]);
-            if (operation < 0) {
-              if (_int8[index + 1] !== undefined) {
-                operation = Number(parseInt(integer) + 10 - _carry4) - Number(_decimal2[index]);
-                _carry4 = 1;
-              }
-            } else {
-              _carry4 = 0;
-            }
-            _temp2.push(operation);
-          });
-          var _resultsForInts2 = _temp2.slice(_numOfDecimals2).reverse();
-          var _resultsForDecimals2 = _temp2.slice(0, _numOfDecimals2);
-          var _resultLenght2 = intsResult.length;
-          while (_resultsForInts2.length > 1 && _resultsForInts2[0] == 0) {
-            _resultsForInts2.shift();
-          }
-          intsResult.reverse();
-          intsResult.splice(_resultLenght2 - _overCarry2 - 1, _overCarry2 + 1, _resultsForInts2.join(''));
-          intsResult.reverse();
-          decimalsResult = _resultsForDecimals2;
-        } else {
-          isNegative = true;
-        }
-      }
-      while (intsResult.length > 1 && intsResult[intsResult.length - 1] == 0) {
-        intsResult.pop();
-      }
-      while (decimalsResult.length >= 1 && decimalsResult[0] == 0) {
-        decimalsResult.shift();
-      }
-      if (isNegative) {
-        intsResult.push('-');
-      }
-      if (decimalsResult.every(function (decimal) {
-        return decimal == 0;
-      }) || decimalsResult.length === 0) {
-        result = intsResult.reverse().join('');
-      } else {
-        result = intsResult.reverse().join('') + '.' + decimalsResult.reverse().join('');
+        var _greaterNumber = bigDecimal.greaterThan(numbers.n1.complete, numbers.n2.complete) ? 1 : bigDecimal.greaterThan(numbers.n2.complete, numbers.n1.complete) ? 2 : 0;
+        result = _greaterNumber === 0 ? '0' : "".concat(_greaterNumber === 1 ? '' : _greaterNumber === 2 ? '-' : '').concat(this.Addition("".concat(_greaterNumber === 1 ? '' : '-').concat(numbers.n1.complete), {
+          justReturn: true,
+          number2: "".concat(_greaterNumber === 1 ? '-' : '').concat(numbers.n2.complete)
+        }));
       }
       return result;
     }
@@ -773,27 +352,9 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "Multiplication",
     value: function Multiplication(number) {
-      var _classPrivateFieldGet2,
-        _String$split$9,
-        _this = this;
-      isValidNumber(String(number));
       var from = _classPrivateFieldGet(this, _result);
-      var decimalsCount = ((_classPrivateFieldGet2 = _classPrivateFieldGet(this, _result).split('.')[1]) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.length) || 0 + ((_String$split$9 = String(number).split('.')[1]) === null || _String$split$9 === void 0 ? void 0 : _String$split$9.length) || 0;
-      var mult = function mult(number, factor) {
-        var tempNumber = factor || _classPrivateFieldGet(_this, _result);
-        var tempResult = factor || _classPrivateFieldGet(_this, _result); //5
-        for (var i = 1; i < Number(number); i++) {
-          tempResult = _this.Addition(tempResult, tempNumber, true).Return();
-        }
-        return tempResult;
-      };
-      if (String(number).split('.').length == 2) {
-        var factor = String(number).split('.');
-        var Operation = mult(factor.join(''), _classPrivateFieldGet(this, _result).split('.').join(''));
-        _classPrivateFieldSet(this, _result, Operation.slice(0, Operation.length - decimalsCount) + '.' + Operation.slice(Operation.length - decimalsCount));
-      } else {
-        _classPrivateFieldSet(this, _result, mult(number));
-      }
+      var result = this.ReturnMultiplication(number);
+      _classPrivateFieldSet(this, _result, result);
       _classPrivateFieldGet(this, _record).operations.push({
         type: 'Multiplication',
         from: from,
@@ -811,26 +372,117 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "ReturnMultiplication",
     value: function ReturnMultiplication(number) {
-      var _classPrivateFieldGet3,
-        _String$split$10,
-        _this2 = this;
+      var _classPrivateFieldGet2, _String$split$;
       isValidNumber(String(number));
-      var decimalsCount = ((_classPrivateFieldGet3 = _classPrivateFieldGet(this, _result).split('.')[1]) === null || _classPrivateFieldGet3 === void 0 ? void 0 : _classPrivateFieldGet3.length) || 0 + ((_String$split$10 = String(number).split('.')[1]) === null || _String$split$10 === void 0 ? void 0 : _String$split$10.length) || 0;
-      var mult = function mult(number, factor) {
-        var tempNumber = factor || _classPrivateFieldGet(_this2, _result);
-        var tempResult = factor || _classPrivateFieldGet(_this2, _result); //5
-        for (var i = 1; i < Number(number); i++) {
-          tempResult = _this2.Addition(tempResult, tempNumber, true).Return();
-        }
-        return tempResult;
+      var decimalsCount = ((_classPrivateFieldGet2 = _classPrivateFieldGet(this, _result).split('.')[1]) === null || _classPrivateFieldGet2 === void 0 ? void 0 : _classPrivateFieldGet2.length) || 0 + ((_String$split$ = String(number).split('.')[1]) === null || _String$split$ === void 0 ? void 0 : _String$split$.length) || 0;
+      var numbers = {
+        n1: getComposition(String(_classPrivateFieldGet(this, _result))),
+        n2: getComposition(String(number))
       };
-      if (String(number).split('.').length == 2) {
-        var factor = String(number).split('.');
-        var Operation = mult(factor.join(''), _classPrivateFieldGet(this, _result).split('.').join(''));
-        return Operation.slice(0, Operation.length - decimalsCount) + '.' + Operation.slice(Operation.length - decimalsCount);
-      } else {
-        return mult(number);
+      var sign = numbers.n1.sign === numbers.n2.sign ? '' : '-';
+      var result = [sign, ''];
+      var mult = function mult(number, factor) {
+        var result = (BigInt(number) * BigInt(factor)).toString();
+        return result;
+      };
+      var num1 = numbers.n1.decimals.some(function (digit) {
+        return digit != 0;
+      }) ? numbers.n1.complete.split('.').join('') : numbers.n1.ints.join('');
+      var num2 = numbers.n2.decimals.some(function (digit) {
+        return digit != 0;
+      }) ? numbers.n2.complete.split('.').join('') : numbers.n2.ints.join('');
+      var Operation = mult(num1, num2);
+      result[1] = numbers.n1.decimals.some(function (digit) {
+        return digit != '0';
+      }) || numbers.n2.decimals.some(function (digit) {
+        return digit != '0';
+      }) ? "".concat(Operation.slice(0, Operation.length - decimalsCount)).concat(Operation.slice(Operation.length - decimalsCount).split('').some(function (digit) {
+        return digit !== '0';
+      }) ? '.' + Operation.slice(Operation.length - decimalsCount) : '') : Operation;
+      return result.join('');
+    }
+  }, {
+    key: "Division",
+    value: function Division(number) {
+      var from = _classPrivateFieldGet(this, _result);
+      _classPrivateFieldSet(this, _result, this.ReturnDivision(number));
+      _classPrivateFieldGet(this, _record).operations.push({
+        type: 'Division',
+        from: from,
+        by: number,
+        result: _classPrivateFieldGet(this, _result)
+      });
+      return this;
+    }
+  }, {
+    key: "ReturnDivision",
+    value: function ReturnDivision(number) {
+      var numbers = {
+        n1: getComposition(String(_classPrivateFieldGet(this, _result))),
+        n2: getComposition(String(number))
+      };
+      if (numbers.n1.complete === '0.0' || numbers.n2.complete === '0.0') {
+        if (_classPrivateFieldGet(this, _conf).divideByZero.error["throw"]) {
+          var divideByZero = new CustomError({
+            name: 'DivideByZero',
+            message: _classPrivateFieldGet(this, _conf).divideByZero.error.message || 'You cant divide a dividend by divisor zero'
+          });
+          throw divideByZero;
+        }
+        if (_classPrivateFieldGet(this, _conf).divideByZero["return"]) {
+          return _classPrivateFieldGet(this, _conf).divideByZero["return"];
+        } else {
+          return Infinity;
+        }
       }
+      // Manejo de signos
+      var isPositiveResult = numbers.n1.sign === '' && numbers.n2.sign === '' || numbers.n1.sign === '-' && numbers.n2.sign === '-';
+      var quotient = division(numbers.n1.complete, numbers.n2.complete);
+      var difference = new bigDecimal(getDiff(numbers.n1.complete, numbers.n2.complete, quotient));
+      var result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '', []];
+      var reps = 0;
+      var divisor = numbers.n2;
+      while (bigDecimal.greaterThan(difference.Return(), 0) && reps <= _classPrivateFieldGet(this, _conf).maxDecimals / 2) {
+        var _difference$Return$sp;
+        reps++;
+        var amplificator = ['1', '0'];
+        var differenceDecimalsLength = ((_difference$Return$sp = difference.Return().split('.')[1]) === null || _difference$Return$sp === void 0 ? void 0 : _difference$Return$sp.length) || 0;
+        for (var i = 0; i < differenceDecimalsLength; i++) {
+          amplificator.push('0');
+        }
+        difference.Multiplication(amplificator.join(''));
+        var remainder = void 0;
+        var decimalLength = divisor.decimals.length;
+        if (divisor.decimals.some(function (digit) {
+          return digit != '0';
+        })) {
+          var _amplificator = ['1'];
+          for (var _i = 0; _i < decimalLength; _i++) {
+            _amplificator.push('0');
+          }
+          difference.Multiplication(_amplificator.join(''));
+          var _divisor = new bigDecimal(numbers.n2.complete).ReturnMultiplication(_amplificator.join(''));
+          remainder = (BigInt(difference.Return()) / BigInt(_divisor)).toString().split('');
+          difference = new bigDecimal(getDiff(difference.Return(), _divisor, remainder.join('')));
+        } else {
+          remainder = division(difference.Return(), numbers.n2.ints.join('')).split('');
+          difference = new bigDecimal(getDiff(difference.Return(), numbers.n2.ints.join(''), remainder.join('')));
+        }
+        remainder = remainder.join('');
+        result[3].push(remainder);
+        if (_classPrivateFieldGet(this, _conf).maxDecimals === Infinity) {
+          var decimalsCount = result[3].join('').split('').length;
+          if (decimalsCount >= _classPrivateFieldGet(this, _conf).periodicDecimalsLimit) {
+            if (isPeriodic(result[3])) {
+              break;
+            }
+          }
+          if (reps >= _classPrivateFieldGet(this, _conf).infinitSaver) {
+            break;
+          }
+        }
+      }
+      return result.flat().join('');
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -1051,7 +703,7 @@ var bigDecimal = /*#__PURE__*/function () {
             }
           }
         } else {
-          if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+          if (!this.isEqualTo("0." + num1.decimals.join(''), "0." + num2.decimals.join(''))) {
             if (num1.decimals[0] < num2.decimals[0]) {
               return true;
             } else if (num1.decimals[0] > num2.decimals[0]) {
@@ -1110,7 +762,7 @@ var bigDecimal = /*#__PURE__*/function () {
             }
           }
         } else {
-          if (!this.isEqualTo(num1.decimals.join(''), num2.decimals.join(''))) {
+          if (!this.isEqualTo("0." + num1.decimals.join(''), "0." + num2.decimals.join(''))) {
             var _ref;
             if ((_ref = num1.decimals[0] > num2.decimals[0]) !== null && _ref !== void 0 ? _ref : 0) {
               return true;
@@ -1169,14 +821,14 @@ var bigDecimal = /*#__PURE__*/function () {
   }, {
     key: "isEqualTo",
     value: function isEqualTo(number1, number2) {
-      var _String$split$11, _String$split$12;
+      var _String$split$2, _String$split$3;
       var num1 = {
         ints: String(number1).split('.')[0].split(''),
-        decimals: ((_String$split$11 = String(number1).split('.')[1]) === null || _String$split$11 === void 0 ? void 0 : _String$split$11.split('')) || [0]
+        decimals: ((_String$split$2 = String(number1).split('.')[1]) === null || _String$split$2 === void 0 ? void 0 : _String$split$2.split('')) || [0]
       };
       var num2 = {
         ints: String(number2).split('.')[0].split(''),
-        decimals: ((_String$split$12 = String(number2).split('.')[1]) === null || _String$split$12 === void 0 ? void 0 : _String$split$12.split('')) || [0]
+        decimals: ((_String$split$3 = String(number2).split('.')[1]) === null || _String$split$3 === void 0 ? void 0 : _String$split$3.split('')) || [0]
       };
       while (num1.ints[0] == 0) {
         num1.ints.shift();
@@ -1308,4 +960,35 @@ var bigDecimal = /*#__PURE__*/function () {
   }]);
   return bigDecimal;
 }();
+function division(number1, number2) {
+  var numbers = {
+    n1: getComposition(String(number1)),
+    n2: getComposition(String(number2))
+  };
+  // Manejo de signos
+  // const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n1.sign === '-');
+  // Convierte dividendos y divisores en positivos para simplificar la división
+  var dividend = new bigDecimal(numbers.n1.complete);
+  var divisor = new bigDecimal(numbers.n2.complete);
+  var isDecimal = bigDecimal.isDecimal(numbers.n1.complete) || bigDecimal.isDecimal(numbers.n2.complete);
+  if (isDecimal) {
+    var greaterDecimalLength = numbers.n1.decimals.some(function (digit) {
+      return digit != '0';
+    }) || numbers.n2.decimals.some(function (digit) {
+      return digit != '0';
+    }) ? Math.max(numbers.n1.decimals.length, numbers.n2.decimals.length) : 0;
+    var amplificator = ['1'];
+    for (var i = 0; i < greaterDecimalLength; i++) {
+      amplificator.push('0');
+    }
+    dividend = BigInt(dividend.Multiplication(amplificator.join('')).Return());
+    divisor = BigInt(divisor.Multiplication(amplificator.join('')).Return());
+  }
+  var result = dividend / divisor;
+  return result.toString();
+}
+function getDiff(dividend, divisor, quotient) {
+  var difference = new bigDecimal(dividend).Subtraction(new bigDecimal(divisor).ReturnMultiplication(quotient));
+  return difference.Return();
+}
 module.exports = bigDecimal;
