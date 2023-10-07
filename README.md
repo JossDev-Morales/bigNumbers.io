@@ -12,7 +12,7 @@
 [discord-img]:https://img.shields.io/badge/Discord-313338?logo=discord&style=social
 [discord-link]:https://discord.com/users/564970023479934977
 
-[Releases Notes](https://github.com/JossDev-Morales/bigNumbers.io#releases-notes)
+[Releases Notes](https://gist.github.com/JossDev-Morales/2407de5d6967abe426f85eab0afd76c5#releases-notes)
 
 [**BigNumber.io**](https://www.npmjs.com/package/bignumber.io "BigNumber.io npm link") is a library for javascript operations to be able to handle very large integer numbers and very large decimal numbers, giving you control over this number and facilitating basic mathematics, with good handling of descriptive errors.
 
