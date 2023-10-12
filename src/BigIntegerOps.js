@@ -169,6 +169,31 @@ class bigInteger {
         return BigInt(this.#result / BigInt(number)).toString()
     }
     /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the residue of dividing the current value by the number you pass as a parameter
+     */
+    Module(number){
+        if (String(number).split('.')[1]) {
+            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+        }
+        let from = this.#result
+        this.#result=BigInt(this.ReturnModule(number))
+        this.#record.operations.push({type:'Module',from,of:number,result:this.#result})
+    }
+     /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
+     * @returns {string} The remainder of the operation as a string
+     */
+    ReturnModule(number){
+        if (String(number).split('.')[1]) {
+            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+        }
+        return (BigInt(this.#result)%BigInt(number)).toString()
+    }
+    /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix The numeric base to convert the current value
      * @method Return 

@@ -15,12 +15,12 @@ const isPeriodic = require("./periodicDecimalFinder")
 class bigDecimal {
     #result = null
     #record = null
-    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
+    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitySaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
     #conf = Object
     /**
      * BigDecimal constructor
      * @param {string | number} initilizedResult 
-     * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
+     * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitySaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
      * @returns {bigDecimal} The initilized BigDecimal
      * @public
      */
@@ -34,12 +34,12 @@ class bigDecimal {
         this.#conf = {
             maxDecimals: Infinity,
             periodicDecimalsLimit:50,
-            infinitSaver:500,
+            infinitySaver:500,
             divideByZero: {
                 return:Infinity,
                 error: {
                     throw: false,
-                    message: 'You cant divide a dividend by divisor zero'
+                    message: 'You cant divide by zero'
                 }
             }
         }
@@ -354,18 +354,30 @@ class bigDecimal {
         result[1] = numbers.n1.decimals.some(digit => digit != '0') || numbers.n2.decimals.some(digit => digit != '0') ? `${Operation.slice(0, Operation.length - decimalsCount)}${Operation.slice(Operation.length - decimalsCount).split('').some(digit => digit !== '0') ? '.' + Operation.slice(Operation.length - decimalsCount) : ''}` : Operation
         return result.join('')
     }
+    /**
+     * 
+     * @param {string|number} number number to divide by
+     * @method Division Divide the current value by the number you pass as a parameter to this method
+     */
     Division(number){
         let from=this.#result
         this.#result=this.ReturnDivision(number)
         this.#record.operations.push({type:'Division',from,by:number,result:this.#result})
         return this
     }
+    /**
+     * 
+     * @param {string|number} number number to divide by
+     * @method Division Divide the current value by the number you pass as a parameter to this method
+     * @returns {string} the result of the operation as a string 
+     */
     ReturnDivision(number) {
         const numbers = {
             n1: getComposition(String(this.#result)),
             n2: getComposition(String(number))
         }
-        if (numbers.n1.complete === '0.0'  || numbers.n2.complete === '0.0') {
+        const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
+        if ( numbers.n2.complete === '0.0') {
             if (this.#conf.divideByZero.error.throw) {
                 let divideByZero=new CustomError({name:'DivideByZero',message:this.#conf.divideByZero.error.message||'You cant divide a dividend by divisor zero'})
                 throw divideByZero
@@ -377,8 +389,11 @@ class bigDecimal {
             }
             
         }
+        if (numbers.n1.complete === '0.0') {
+            return  '0'
+        }
         // Manejo de signos
-        const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
+        
         let quotient = division(numbers.n1.complete, numbers.n2.complete)
         let difference = new bigDecimal(getDiff(numbers.n1.complete, numbers.n2.complete, quotient))
         let result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '',[]]
@@ -422,6 +437,48 @@ class bigDecimal {
             }
         }
         return result.flat().join('')
+    }
+    /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the residue of dividing the current value by the number you pass as a parameter
+     */
+    Module(number){
+        let from=this.#result
+        this.#result=this.ReturnModule(number)
+        this.#record.operations.push({type:'Module',from,of:number,result:this.#result})
+        return this
+    }
+    /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
+     * @returns {string} The remainder of the operation as a string
+     */
+    ReturnModule(number){
+        const numbers = {
+            n1: getComposition(String(this.#result)),
+            n2: getComposition(String(number))
+        }
+        const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
+        if ( numbers.n2.complete === '0.0') {
+            if (this.#conf.divideByZero.error.throw) {
+                let divideByZero=new CustomError({name:'DivideByZero',message:this.#conf.divideByZero.error.message||'You cant divide a dividend by divisor zero'})
+                throw divideByZero
+            }
+            if (this.#conf.divideByZero.return) {
+                return this.#conf.divideByZero.return
+            }else{
+                return Infinity
+            }
+            
+        }
+        if (numbers.n1.complete === '0.0') {
+            return  '0'
+        }
+        let quotient = division(numbers.n1.complete, numbers.n2.complete)
+        let difference = getDiff(numbers.n1.complete, numbers.n2.complete, quotient)
+        return isPositiveResult?difference:'-'+difference
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
