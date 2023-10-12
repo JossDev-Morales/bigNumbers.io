@@ -35,7 +35,7 @@ var bigDecimal = /*#__PURE__*/function () {
   /**
    * BigDecimal constructor
    * @param {string | number} initilizedResult 
-   * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
+   * @param {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitySaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} confs 
    * @returns {bigDecimal} The initilized BigDecimal
    * @public
    */
@@ -50,7 +50,7 @@ var bigDecimal = /*#__PURE__*/function () {
       writable: true,
       value: null
     });
-    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitSaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
+    /**@type {{maxDecimals:number|undefined,periodicDecimalsLimit:number|undefined,infinitySaver:number|undefined,divideByZero:{return:any|undefined,error:{throw:boolean,message:string}}}} */
     _classPrivateFieldInitSpec(this, _conf, {
       writable: true,
       value: Object
@@ -64,12 +64,12 @@ var bigDecimal = /*#__PURE__*/function () {
     _classPrivateFieldSet(this, _conf, {
       maxDecimals: Infinity,
       periodicDecimalsLimit: 50,
-      infinitSaver: 500,
+      infinitySaver: 500,
       divideByZero: {
         "return": Infinity,
         error: {
           "throw": false,
-          message: 'You cant divide a dividend by divisor zero'
+          message: 'You cant divide by zero'
         }
       }
     });
@@ -401,6 +401,11 @@ var bigDecimal = /*#__PURE__*/function () {
       }) ? '.' + Operation.slice(Operation.length - decimalsCount) : '') : Operation;
       return result.join('');
     }
+    /**
+     * 
+     * @param {string|number} number number to divide by
+     * @method Division Divide the current value by the number you pass as a parameter to this method
+     */
   }, {
     key: "Division",
     value: function Division(number) {
@@ -414,6 +419,12 @@ var bigDecimal = /*#__PURE__*/function () {
       });
       return this;
     }
+    /**
+     * 
+     * @param {string|number} number number to divide by
+     * @method Division Divide the current value by the number you pass as a parameter to this method
+     * @returns {string} the result of the operation as a string 
+     */
   }, {
     key: "ReturnDivision",
     value: function ReturnDivision(number) {
@@ -421,7 +432,8 @@ var bigDecimal = /*#__PURE__*/function () {
         n1: getComposition(String(_classPrivateFieldGet(this, _result))),
         n2: getComposition(String(number))
       };
-      if (numbers.n1.complete === '0.0' || numbers.n2.complete === '0.0') {
+      var isPositiveResult = numbers.n1.sign === '' && numbers.n2.sign === '' || numbers.n1.sign === '-' && numbers.n2.sign === '-';
+      if (numbers.n2.complete === '0.0') {
         if (_classPrivateFieldGet(this, _conf).divideByZero.error["throw"]) {
           var divideByZero = new CustomError({
             name: 'DivideByZero',
@@ -435,8 +447,11 @@ var bigDecimal = /*#__PURE__*/function () {
           return Infinity;
         }
       }
+      if (numbers.n1.complete === '0.0') {
+        return '0';
+      }
       // Manejo de signos
-      var isPositiveResult = numbers.n1.sign === '' && numbers.n2.sign === '' || numbers.n1.sign === '-' && numbers.n2.sign === '-';
+
       var quotient = division(numbers.n1.complete, numbers.n2.complete);
       var difference = new bigDecimal(getDiff(numbers.n1.complete, numbers.n2.complete, quotient));
       var result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '', []];
@@ -483,6 +498,59 @@ var bigDecimal = /*#__PURE__*/function () {
         }
       }
       return result.flat().join('');
+    }
+    /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the residue of dividing the current value by the number you pass as a parameter
+     */
+  }, {
+    key: "Module",
+    value: function Module(number) {
+      var from = _classPrivateFieldGet(this, _result);
+      _classPrivateFieldSet(this, _result, this.ReturnModule(number));
+      _classPrivateFieldGet(this, _record).operations.push({
+        type: 'Module',
+        from: from,
+        of: number,
+        result: _classPrivateFieldGet(this, _result)
+      });
+      return this;
+    }
+    /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
+     * @returns {string} The remainder of the operation as a string
+     */
+  }, {
+    key: "ReturnModule",
+    value: function ReturnModule(number) {
+      var numbers = {
+        n1: getComposition(String(_classPrivateFieldGet(this, _result))),
+        n2: getComposition(String(number))
+      };
+      var isPositiveResult = numbers.n1.sign === '' && numbers.n2.sign === '' || numbers.n1.sign === '-' && numbers.n2.sign === '-';
+      if (numbers.n2.complete === '0.0') {
+        if (_classPrivateFieldGet(this, _conf).divideByZero.error["throw"]) {
+          var divideByZero = new CustomError({
+            name: 'DivideByZero',
+            message: _classPrivateFieldGet(this, _conf).divideByZero.error.message || 'You cant divide a dividend by divisor zero'
+          });
+          throw divideByZero;
+        }
+        if (_classPrivateFieldGet(this, _conf).divideByZero["return"]) {
+          return _classPrivateFieldGet(this, _conf).divideByZero["return"];
+        } else {
+          return Infinity;
+        }
+      }
+      if (numbers.n1.complete === '0.0') {
+        return '0';
+      }
+      var quotient = division(numbers.n1.complete, numbers.n2.complete);
+      var difference = getDiff(numbers.n1.complete, numbers.n2.complete, quotient);
+      return isPositiveResult ? difference : '-' + difference;
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions

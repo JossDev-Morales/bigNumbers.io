@@ -198,6 +198,40 @@ var bigInteger = /*#__PURE__*/function () {
       return BigInt(_classPrivateFieldGet(this, _result) / BigInt(number)).toString();
     }
     /**
+     * 
+     * @param {string|number} number number to get module or remainder 
+     * @method Module Get the residue of dividing the current value by the number you pass as a parameter
+     */
+  }, {
+    key: "Module",
+    value: function Module(number) {
+      if (String(number).split('.')[1]) {
+        throw new Error("The number ".concat(number, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
+      }
+      var from = _classPrivateFieldGet(this, _result);
+      _classPrivateFieldSet(this, _result, BigInt(this.ReturnModule(number)));
+      _classPrivateFieldGet(this, _record).operations.push({
+        type: 'Module',
+        from: from,
+        of: number,
+        result: _classPrivateFieldGet(this, _result)
+      });
+    }
+    /**
+    * 
+    * @param {string|number} number number to get module or remainder 
+    * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
+    * @returns {string} The remainder of the operation as a string
+    */
+  }, {
+    key: "ReturnModule",
+    value: function ReturnModule(number) {
+      if (String(number).split('.')[1]) {
+        throw new Error("The number ".concat(number, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
+      }
+      return (BigInt(_classPrivateFieldGet(this, _result)) % BigInt(number)).toString();
+    }
+    /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix The numeric base to convert the current value
      * @method Return 
