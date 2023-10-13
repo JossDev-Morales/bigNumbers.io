@@ -1,9 +1,12 @@
+const isValidNumber = require("./IsValidNumber")
+
 /**
  * 
  * @param {string} numberRaw the number to extract the composition
  * @returns {{sign:string,ints:Array,decimals:Array,complete:string}}
  */
 function getComposition(numberRaw) {
+    isValidNumber(numberRaw)
     let number=numberRaw.split('')
     if (number[0]===' ') {
         while (number[0]===' ') {
