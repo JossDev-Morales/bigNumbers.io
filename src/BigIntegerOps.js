@@ -180,6 +180,7 @@ class bigInteger {
         let from = this.#result
         this.#result=BigInt(this.ReturnModule(number))
         this.#record.operations.push({type:'Module',from,of:number,result:this.#result})
+        return this
     }
      /**
      * 
@@ -192,6 +193,21 @@ class bigInteger {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
         return (BigInt(this.#result)%BigInt(number)).toString()
+    }
+    Power(number){
+        if (String(number).split('.')[1]) {
+            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+        }
+        let from=this.#result
+        this.#result=BigInt(this.ReturnPower(number))
+        this.#record.operations.push({type:'Power',from,elevatedTo:number,result:this.#result})
+        return this
+    }
+    ReturnPower(number){
+        if (String(number).split('.')[1]) {
+            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+        }
+        return (BigInt(this.#result)**BigInt(number)).toString()
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
