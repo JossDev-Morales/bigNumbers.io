@@ -1,5 +1,7 @@
 "use strict";
 
+var isValidNumber = require("./IsValidNumber");
+
 /**
  * 
  * @param {string} numberRaw the number to extract the composition
@@ -7,6 +9,7 @@
  */
 function getComposition(numberRaw) {
   var _number$slice$split$, _number$slice$split$2;
+  isValidNumber(numberRaw);
   var number = numberRaw.split('');
   if (number[0] === ' ') {
     while (number[0] === ' ') {
