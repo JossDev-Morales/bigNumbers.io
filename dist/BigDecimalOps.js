@@ -553,6 +553,72 @@ var bigDecimal = /*#__PURE__*/function () {
       return isPositiveResult ? difference : '-' + difference;
     }
     /**
+     * 
+     * @param {string|number} number The exponent with which the current value will be exponentiated. 
+     * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
+     */
+  }, {
+    key: "Power",
+    value: function Power(number) {
+      var from = _classPrivateFieldGet(this, _result);
+      _classPrivateFieldSet(this, _result, this.ReturnPower(number));
+      _classPrivateFieldGet(this, _record).operations.push({
+        type: 'Powe',
+        from: from,
+        elevatedtO: number,
+        result: _classPrivateFieldGet(this, _result)
+      });
+      return this;
+    }
+    /**
+     * 
+     * @param {string|number} number The exponent with which the current value will be exponentiated. 
+     * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
+     * @returns {string} The result of the operation as a string
+     */
+  }, {
+    key: "ReturnPower",
+    value: function ReturnPower(number) {
+      var numbers = {
+        n1: getComposition(_classPrivateFieldGet(this, _result)),
+        n2: getComposition(number)
+      };
+      var isPositiveResult = numbers.n1.sign === '-' ? false : true;
+      var completeNumber = new bigDecimal(numbers.n1.decimals.some(function (dig) {
+        return dig != '0';
+      }) ? numbers.n1.complete : numbers.n1.ints);
+      var multi = [1];
+      var result;
+      if (numbers.n2.decimals.some(function (dig) {
+        return dig != '0';
+      })) {
+        throw new CustomError({
+          name: 'InvalidExponent',
+          message: 'You cant use a decimal exponent',
+          exponent: numbers.n2.sign + numbers.n2.complete
+        });
+      }
+      if (numbers.n1.decimals.some(function (dig) {
+        return dig != '0';
+      })) {
+        var decimalslength = numbers.n1.decimals.length;
+        for (var i = 0; i < decimalslength; i++) {
+          multi.push(0);
+        }
+        if (Number(multi.join('')) > 1) {
+          completeNumber.Multiplication(Number(multi.join('')));
+        }
+      }
+      var powNum = Math.pow(BigInt(completeNumber.Return()), BigInt(numbers.n2.ints));
+      if (Number(multi.join('')) > 1) {
+        var powMult = Math.pow(BigInt(Number(multi.join(''))), BigInt(numbers.n2.ints));
+        result = new bigDecimal(powNum.toString()).ReturnDivision(powMult.toString());
+      } else {
+        result = powNum.toString();
+      }
+      return isPositiveResult ? result : '-' + result;
+    }
+    /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
      * @method Return 

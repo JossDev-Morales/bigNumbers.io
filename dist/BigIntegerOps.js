@@ -216,6 +216,7 @@ var bigInteger = /*#__PURE__*/function () {
         of: number,
         result: _classPrivateFieldGet(this, _result)
       });
+      return this;
     }
     /**
     * 
@@ -230,6 +231,30 @@ var bigInteger = /*#__PURE__*/function () {
         throw new Error("The number ".concat(number, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
       }
       return (BigInt(_classPrivateFieldGet(this, _result)) % BigInt(number)).toString();
+    }
+  }, {
+    key: "Power",
+    value: function Power(number) {
+      if (String(number).split('.')[1]) {
+        throw new Error("The number ".concat(number, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
+      }
+      var from = _classPrivateFieldGet(this, _result);
+      _classPrivateFieldSet(this, _result, BigInt(this.ReturnPower(number)));
+      _classPrivateFieldGet(this, _record).operations.push({
+        type: 'Power',
+        from: from,
+        elevatedTo: number,
+        result: _classPrivateFieldGet(this, _result)
+      });
+      return this;
+    }
+  }, {
+    key: "ReturnPower",
+    value: function ReturnPower(number) {
+      if (String(number).split('.')[1]) {
+        throw new Error("The number ".concat(number, " its an invalid integer type, if you need to use a decimal number, use BigDecimal"));
+      }
+      return Math.pow(BigInt(_classPrivateFieldGet(this, _result)), BigInt(number)).toString();
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
