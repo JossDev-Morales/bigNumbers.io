@@ -1,6 +1,6 @@
 {
   "name": "bignumber.io",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
@@ -31,11 +31,18 @@
     "bignumber",
     "big number",
     "math logic",
-    "math logic operations"
+    "math logic operations",
+    "arbitrary-precision",
+    "arbitrary precision decimals and integers",
+    "big integer",
+    "Math module",
+    "Math operations",
+    "gauss sum",
+    "light-weight"
   ],
   "author": "JossDev",
   "license": "MIT",
-  "description": "Tool to handle big numbers in javascript and have access to mathematical operations with these numbers.",
+  "description": "Library for representing decimal numbers and large integers of arbitrary-precision and using basic and complex mathematical methods, conversions between bases and logical operations with good handling of descriptive errors.",
   "devDependencies": {
     "@babel/cli": "^7.22.9",
     "@babel/core": "^7.22.9",
@@ -53,7 +60,7 @@
     "email": "thejosuescript@gmail.com",
     "url": "https://github.com/JossDev-Morales/bigNumbers.io/issues"
   },
-  "homepage": "https://github.com/JossDev-Morales/bigNumbers.io#readme",
+  "homepage": "https://gist.github.com/JossDev-Morales/2407de5d6967abe426f85eab0afd76c5",
   "maintainers": [
     {
       "email": "thejosuescript@gmail.com",
