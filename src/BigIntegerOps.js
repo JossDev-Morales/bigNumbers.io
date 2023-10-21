@@ -1,4 +1,5 @@
 const { converter } = require("number-converter.io")
+const getComposition = require("./getComposition")
 /**
  * @class representation of a big integer that exceeds the javascript limit
  * @description Use this class to represent a very large integer, if your number supports javascript integers, use vanilla integer number, this BigInteger is based on the bigInt type.
