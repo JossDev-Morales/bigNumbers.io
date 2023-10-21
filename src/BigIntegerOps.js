@@ -470,7 +470,7 @@ class bigInteger {
      * @returns {boolean}
      */
     static isPositive(number){
-        return !bigDecimal.isNegative(number)
+        return !bigInteger.isNegative(number)
     }
     /**
      * 
