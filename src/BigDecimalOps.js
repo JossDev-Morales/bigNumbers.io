@@ -3,6 +3,7 @@ const isValidNumber = require("./IsValidNumber")
 const getComposition = require("./getComposition")
 const CustomError = require("./CustomError")
 const isPeriodic = require("./periodicDecimalFinder")
+const bigInteger = require("./BigIntegerOps")
 /**
  * @class representation of a big decimal that exceeds the javascript limit
  * @description Use this class to represent a very large decimals, if your number supports javascript decimals, use vanilla decimal number, this BigDecimal work with strings operations.
@@ -33,23 +34,23 @@ class bigDecimal {
         }
         this.#conf = {
             maxDecimals: Infinity,
-            periodicDecimalsLimit:50,
-            infinitySaver:500,
+            periodicDecimalsLimit: 50,
+            infinitySaver: 500,
             divideByZero: {
-                return:Infinity,
+                return: Infinity,
                 error: {
                     throw: false,
                     message: 'You cant divide by zero'
                 }
             }
         }
-        Object.keys(confs||{}).forEach(key=>{
-            if (typeof confs[key]==='object') {
-                Object.keys(confs[key]).forEach(key2=>{
-                    this.#conf[key][key2]=confs[key][key2]
+        Object.keys(confs || {}).forEach(key => {
+            if (typeof confs[key] === 'object') {
+                Object.keys(confs[key]).forEach(key2 => {
+                    this.#conf[key][key2] = confs[key][key2]
                 })
-            }else{
-                this.#conf[key]=confs[key]
+            } else {
+                this.#conf[key] = confs[key]
             }
         })
     }
@@ -359,10 +360,10 @@ class bigDecimal {
      * @param {string|number} number number to divide by
      * @method Division Divide the current value by the number you pass as a parameter to this method
      */
-    Division(number){
-        let from=this.#result
-        this.#result=this.ReturnDivision(number)
-        this.#record.operations.push({type:'Division',from,by:number,result:this.#result})
+    Division(number) {
+        let from = this.#result
+        this.#result = this.ReturnDivision(number)
+        this.#record.operations.push({ type: 'Division', from, by: number, result: this.#result })
         return this
     }
     /**
@@ -377,29 +378,29 @@ class bigDecimal {
             n2: getComposition(String(number))
         }
         const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
-        if ( numbers.n2.complete === '0.0') {
+        if (numbers.n2.complete === '0.0') {
             if (this.#conf.divideByZero.error.throw) {
-                let divideByZero=new CustomError({name:'DivideByZero',message:this.#conf.divideByZero.error.message||'You cant divide a dividend by divisor zero'})
+                let divideByZero = new CustomError({ name: 'DivideByZero', message: this.#conf.divideByZero.error.message || 'You cant divide a dividend by divisor zero' })
                 throw divideByZero
             }
             if (this.#conf.divideByZero.return) {
                 return this.#conf.divideByZero.return
-            }else{
+            } else {
                 return Infinity
             }
-            
+
         }
         if (numbers.n1.complete === '0.0') {
-            return  '0'
+            return '0'
         }
         // Manejo de signos
-        
+
         let quotient = division(numbers.n1.complete, numbers.n2.complete)
         let difference = new bigDecimal(getDiff(numbers.n1.complete, numbers.n2.complete, quotient))
-        let result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '',[]]
+        let result = [isPositiveResult ? '' : '-', quotient, bigDecimal.greaterThan(difference.Return(), 0) ? '.' : '', []]
         let reps = 0
         let divisor = numbers.n2
-        while (bigDecimal.greaterThan(difference.Return(), 0) && (reps <= this.#conf.maxDecimals/2)) {
+        while (bigDecimal.greaterThan(difference.Return(), 0) && (reps <= this.#conf.maxDecimals / 2)) {
             reps++
             let amplificator = ['1', '0']
             let differenceDecimalsLength = difference.Return().split('.')[1]?.length || 0
@@ -419,19 +420,19 @@ class bigDecimal {
                 remainder = (BigInt(difference.Return()) / BigInt(divisor)).toString().split('')
                 difference = new bigDecimal(getDiff(difference.Return(), divisor, remainder.join('')))
             } else {
-                remainder = division(difference.Return(),numbers.n2.ints.join('')).split('')
+                remainder = division(difference.Return(), numbers.n2.ints.join('')).split('')
                 difference = new bigDecimal(getDiff(difference.Return(), numbers.n2.ints.join(''), remainder.join('')))
             }
             remainder = remainder.join('')
             result[3].push(remainder)
-            if (this.#conf.maxDecimals===Infinity) {
-                let decimalsCount=result[3].join('').split('').length
-                if (decimalsCount>=this.#conf.periodicDecimalsLimit) {
+            if (this.#conf.maxDecimals === Infinity) {
+                let decimalsCount = result[3].join('').split('').length
+                if (decimalsCount >= this.#conf.periodicDecimalsLimit) {
                     if (isPeriodic(result[3])) {
                         break
                     }
                 }
-                if (reps>=this.#conf.infinitSaver) {
+                if (reps >= this.#conf.infinitSaver) {
                     break
                 }
             }
@@ -443,10 +444,10 @@ class bigDecimal {
      * @param {string|number} number number to get module or remainder 
      * @method Module Get the residue of dividing the current value by the number you pass as a parameter
      */
-    Module(number){
-        let from=this.#result
-        this.#result=this.ReturnModule(number)
-        this.#record.operations.push({type:'Module',from,of:number,result:this.#result})
+    Module(number) {
+        let from = this.#result
+        this.#result = this.ReturnModule(number)
+        this.#record.operations.push({ type: 'Module', from, of: number, result: this.#result })
         return this
     }
     /**
@@ -455,40 +456,40 @@ class bigDecimal {
      * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
      * @returns {string} The remainder of the operation as a string
      */
-    ReturnModule(number){
+    ReturnModule(number) {
         const numbers = {
             n1: getComposition(String(this.#result)),
             n2: getComposition(String(number))
         }
         const isPositiveResult = (numbers.n1.sign === '' && numbers.n2.sign === '') || (numbers.n1.sign === '-' && numbers.n2.sign === '-');
-        if ( numbers.n2.complete === '0.0') {
+        if (numbers.n2.complete === '0.0') {
             if (this.#conf.divideByZero.error.throw) {
-                let divideByZero=new CustomError({name:'DivideByZero',message:this.#conf.divideByZero.error.message||'You cant divide a dividend by divisor zero'})
+                let divideByZero = new CustomError({ name: 'DivideByZero', message: this.#conf.divideByZero.error.message || 'You cant divide a dividend by divisor zero' })
                 throw divideByZero
             }
             if (this.#conf.divideByZero.return) {
                 return this.#conf.divideByZero.return
-            }else{
+            } else {
                 return Infinity
             }
-            
+
         }
         if (numbers.n1.complete === '0.0') {
-            return  '0'
+            return '0'
         }
         let quotient = division(numbers.n1.complete, numbers.n2.complete)
         let difference = getDiff(numbers.n1.complete, numbers.n2.complete, quotient)
-        return isPositiveResult?difference:'-'+difference
+        return isPositiveResult ? difference : '-' + difference
     }
     /**
      * 
      * @param {string|number} number The exponent with which the current value will be exponentiated. 
      * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
      */
-    Power(number){
-        let from=this.#result
-        this.#result=this.ReturnPower(number)
-        this.#record.operations.push({type:'Powe',from,elevatedtO:number,result:this.#result})
+    Power(number) {
+        let from = this.#result
+        this.#result = this.ReturnPower(number)
+        this.#record.operations.push({ type: 'Power', from, elevatedtO: number, result: this.#result })
         return this
     }
     /**
@@ -497,36 +498,137 @@ class bigDecimal {
      * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
      * @returns {string} The result of the operation as a string
      */
-    ReturnPower(number){
-        const numbers={
-            n1:getComposition(this.#result),
-            n2:getComposition(number)
+    ReturnPower(number) {
+        const numbers = {
+            n1: getComposition(this.#result),
+            n2: getComposition(number)
         }
-        let isPositiveResult=numbers.n1.sign==='-'?false:true
-        let completeNumber=new bigDecimal(numbers.n1.decimals.some(dig=>dig!='0')?numbers.n1.complete:numbers.n1.ints)
-        let multi=[1]
+        let isPositiveResult = numbers.n1.sign === '-' ? false : true
+        let completeNumber = new bigDecimal(numbers.n1.decimals.some(dig => dig != '0') ? numbers.n1.complete : numbers.n1.ints)
+        let multi = [1]
         let result
-        if (numbers.n2.decimals.some(dig=>dig!='0')) {
-            throw new CustomError({name:'InvalidExponent',message:'You cant use a decimal exponent',exponent:numbers.n2.sign+numbers.n2.complete})
+        if (numbers.n2.decimals.some(dig => dig != '0')) {
+            throw new CustomError({ name: 'InvalidExponent', message: 'You cant use a decimal exponent', exponent: numbers.n2.sign + numbers.n2.complete })
         }
-        if (numbers.n1.decimals.some(dig=>dig!='0')) {
-            let decimalslength=numbers.n1.decimals.length
+        if (numbers.n1.decimals.some(dig => dig != '0')) {
+            let decimalslength = numbers.n1.decimals.length
             for (let i = 0; i < decimalslength; i++) {
                 multi.push(0)
             }
-            if (Number(multi.join(''))>1) {
+            if (Number(multi.join('')) > 1) {
                 completeNumber.Multiplication(Number(multi.join('')))
             }
         }
-        let powNum=BigInt(completeNumber.Return())**BigInt(numbers.n2.ints)
-        if (Number(multi.join(''))>1) {
-            let powMult=BigInt(Number(multi.join('')))**BigInt(numbers.n2.ints)
-            result=new bigDecimal(powNum.toString()).ReturnDivision(powMult.toString())
-        }else{
-            result=powNum.toString()
+        let powNum = BigInt(completeNumber.Return()) ** BigInt(numbers.n2.ints)
+        if (Number(multi.join('')) > 1) {
+            let powMult = BigInt(Number(multi.join(''))) ** BigInt(numbers.n2.ints)
+            result = new bigDecimal(powNum.toString()).ReturnDivision(powMult.toString())
+        } else {
+            result = powNum.toString()
         }
-        return isPositiveResult?result:'-'+result
+        return isPositiveResult ? result : '-' + result
     }
+    /**
+     * 
+     * @method Squared This method obtains the current value squared
+     */
+    Squared(){
+        let from = this.#result
+        this.#result= new bigDecimal(this.#result).ReturnSquared()
+        this.#record.operations.push({type:'Squared', from, result:this.#result})
+        return this
+    }
+    /**
+     * 
+     * @method Squared This method obtains the current value squared
+     * @returns {string} The result of the operation as a string
+     */
+    ReturnSquared(){
+        return new bigDecimal(this.#result).ReturnMultiplication(this.#result)
+    }
+    /**
+     * 
+     * @method Cubed This method obtains the current value cubed
+     */
+    Cubed(){
+        let from = this.#result
+        this.#result= new bigDecimal(this.#result).ReturnCubed()
+        this.#record.operations.push({type:'Cubed', from, result:this.#result})
+        return this
+    }
+    /**
+     * 
+     * @method Cubed This method obtains the current value cubed
+     * @returns {string} The result of the operation as a string
+     */
+    ReturnCubed(){
+        return new bigDecimal(new bigDecimal(this.#result).ReturnMultiplication(this.#result)).ReturnMultiplication(this.#result)
+    }
+    /**
+     * 
+     * @method Abs Gets the absolute value of the current value
+     * @returns {string} The absolute value as a string
+     */
+    Abs() {
+        return bigDecimal.getAbs(this.#result)
+    }
+    /**
+     * 
+     * @method isPrime Returns true if the current value is prime
+     * @returns {boolean} 
+     */
+    isPrime(){
+        return bigDecimal.isPrime(this.#result)
+    }
+    /**
+     * 
+     * @method isComposite Returns true if the current value is composite
+     * @returns {boolean} 
+     */
+    isComposite(){
+        return bigDecimal.isComposite(this.#result)
+    }
+    /**
+     * 
+     * @method isEven Returns true if the current value is even
+     * @returns {boolean} 
+     */
+    isEven(){
+        return bigDecimal.isEven(this.#result)
+    }
+    /**
+     * 
+     * @method isOdd Returns true if the current value is odd
+     * @returns {boolean} 
+     */
+    isOdd(){
+        return bigDecimal.isOdd(this.#result)
+    }
+    /**
+     * 
+     * @method isPositive Returns true if the current value is positive
+     * @returns {boolean} 
+     */
+    isPositive(){
+        return bigDecimal.isPositive(this.#result)
+    }
+    /**
+     * 
+     * @method isNegative Returns true if the current value is negative
+     * @returns {boolean} 
+     */
+    isNegative(){
+        return bigDecimal.isNegative(this.#result)
+    }
+    /**
+     * 
+     * @method isZero Returns true if the current value is equal to zero
+     * @returns {boolean} 
+     */
+    isZero(){
+        return bigDecimal.isZero(this.#result)
+    }
+    
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
      * @param {('binary'|'octal'|'decimal'|'hexadecimal'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17'|'18'|'19'|'20'|'21'|'22'|'23'|'24'|'25'|'26'|'27'|'28'|'29'|'30'|'31'|'32'|'33'|'34'|'35'|'36')} radix the numeric base to convert the current value
@@ -611,6 +713,27 @@ class bigDecimal {
      */
     lte(number) {
         return bigDecimal.lessOrEqualThan(this.#result, number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method getAbs Returns the absolute value of the current value
+     * @returns {string} The result of the operation as a string
+     */
+    static getAbs(number) {
+        let composition = getComposition(number)
+        return composition.decimals.some(digit => digit != 0) ? composition.complete : composition.ints.join('')
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method gaussSumOf Returns the result of the sum of gauss of the natural numbers between 1 and the number you pass as a parameter
+     * @returns {string} The result of the operation as a string
+     */
+    static gaussSumOf(number){
+        let plusOfFirstAndLast=new bigDecimal(number).Addition('1')
+        let plusMultByGreatest=plusOfFirstAndLast.Multiplication(number).Division('2')
+        return plusMultByGreatest.Return()
     }
     /**
      * 
@@ -854,6 +977,100 @@ class bigDecimal {
         } else {
             return !this.greaterThan(number1, number2)
         }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isPrime Returns true if the current value is prime
+     * @returns {boolean}
+     */
+    static isPrime(number) {
+        let intPart=new bigInteger(getComposition(String(number)).ints.join(''))
+        if (intPart.lte(1)) {
+            return false; // Los números menores o iguales a 1 no son primos.
+        }
+
+        if (intPart.lte(3)) {
+            return true; // 2 y 3 son primos.
+        }
+
+        if (intPart.ReturnModule(2)==='0' || intPart.ReturnModule(3)==='0') {
+            return false; // Los múltiplos de 2 y 3 no son primos.
+        }
+
+        // Verifica divisibilidad desde 5 en adelante.
+        for (let i = new bigInteger(5); bigInteger.lessOrEqualThan(i.ReturnMultiplication(i.Return()),intPart.Return()); i.Addition(6)) {
+            if (intPart.ReturnModule(i.Return()) == 0 || intPart.ReturnModule(i.ReturnAddition(2)) == 0) {
+                return false; // Si es divisible por i o i + 2, no es primo.
+            }
+        }
+
+        return true;
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isComposite Returns true if the current value is composite
+     * @returns {boolean}
+     */
+    static isComposite(number){
+        return !bigDecimal.isPrime(number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isEven Returns true if the current value is even
+     * @returns {boolean}
+     */
+    static isEven(number){
+        let intPart=new bigInteger(getComposition(String(number)).ints.join(''))
+        return intPart.ReturnModule(2)==='0'
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isOdd Returns true if the current value is odd
+     * @returns {boolean}
+     */
+    static isOdd(number){
+        return !bigDecimal.isEven(number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isZero Returns true if the current value is equals to zero
+     * @returns {boolean}
+     */
+    static isZero(number){
+        let composition=getComposition(String(number))
+        if (composition.decimals.join('')==='0') {
+            if (composition.ints.every(digit=>digit==='0')) {
+                return true
+            }else return false
+        }else if (composition.ints.every(digit=>dig==='0')) {
+            if (composition.decimals.every(digit=>digit==='0')) {
+                return true
+            }else return false
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isNegative Returns true if the current value is negative
+     * @returns {boolean}
+     */
+    static isNegative(number){
+        let sign=getComposition(String(number)).sign
+        return sign==='-'
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isPositive Returns true if the current value is positive
+     * @returns {boolean}
+     */
+    static isPositive(number){
+        return !bigDecimal.isNegative(number)
     }
     /**
      * 

@@ -31,8 +31,8 @@ class bigInteger {
      * @param {string} Binary Number in binary base
      * @returns {bigInteger} 
      */
-    static fromBinary(Binary){
-        const binarynumber= new converter(Binary,'2')
+    static fromBinary(Binary) {
+        const binarynumber = new converter(Binary, '2')
         return new this(binarynumber.toDecimal())
     }
     /**
@@ -40,8 +40,8 @@ class bigInteger {
      * @param {string} octal Number in octal base
      * @returns {bigInteger}
      */
-    static fromOctal(octal){
-        const octalnumber= new converter(octal,'8')
+    static fromOctal(octal) {
+        const octalnumber = new converter(octal, '8')
         return new this(octalnumber.toDecimal())
     }
     /**
@@ -49,8 +49,8 @@ class bigInteger {
      * @param {string} hexadecimal Number in hexadecimal base
      * @returns {bigInteger}
      */
-    static fromHexadecimal(hexadecimal){
-        const hexanumber= new converter(hexadecimal,'16')
+    static fromHexadecimal(hexadecimal) {
+        const hexanumber = new converter(hexadecimal, '16')
         return new this(hexanumber.toDecimal())
     }
     /**
@@ -59,8 +59,8 @@ class bigInteger {
      * @param {string} base The base of the number
      * @returns {bigInteger}
      */
-    static fromOtherBase(number,base){
-        const basenumber= new converter(number,String(base))
+    static fromOtherBase(number, base) {
+        const basenumber = new converter(number, String(base))
         return new this(basenumber.toDecimal())
     }
     /**
@@ -173,41 +173,52 @@ class bigInteger {
      * @param {string|number} number number to get module or remainder 
      * @method Module Get the residue of dividing the current value by the number you pass as a parameter
      */
-    Module(number){
+    Module(number) {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
         let from = this.#result
-        this.#result=BigInt(this.ReturnModule(number))
-        this.#record.operations.push({type:'Module',from,of:number,result:this.#result})
+        this.#result = BigInt(this.ReturnModule(number))
+        this.#record.operations.push({ type: 'Module', from, of: number, result: this.#result })
         return this
     }
-     /**
+    /**
+    * 
+    * @param {string|number} number number to get module or remainder 
+    * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
+    * @returns {string} The remainder of the operation as a string
+    */
+    ReturnModule(number) {
+        if (String(number).split('.')[1]) {
+            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
+        }
+        return (BigInt(this.#result) % BigInt(number)).toString()
+    }
+    /**
      * 
-     * @param {string|number} number number to get module or remainder 
-     * @method Module Get the remainder of dividing the current value by the number you pass as a parameter
-     * @returns {string} The remainder of the operation as a string
+     * @param {string|number} number The exponent with which the current value will be exponentiated. 
+     * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
      */
-    ReturnModule(number){
+    Power(number) {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return (BigInt(this.#result)%BigInt(number)).toString()
-    }
-    Power(number){
-        if (String(number).split('.')[1]) {
-            throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
-        }
-        let from=this.#result
-        this.#result=BigInt(this.ReturnPower(number))
-        this.#record.operations.push({type:'Power',from,elevatedTo:number,result:this.#result})
+        let from = this.#result
+        this.#result = BigInt(this.ReturnPower(number))
+        this.#record.operations.push({ type: 'Power', from, elevatedTo: number, result: this.#result })
         return this
     }
-    ReturnPower(number){
+    /**
+     * 
+     * @param {string|number} number The exponent with which the current value will be exponentiated. 
+     * @method Power Gets the result of exponentiating the current value by the exponent that you pass as a parameter to this method
+     * @returns {string} The result of the operation as a string
+     */
+    ReturnPower(number) {
         if (String(number).split('.')[1]) {
             throw new Error(`The number ${number} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
-        return (BigInt(this.#result)**BigInt(number)).toString()
+        return (BigInt(this.#result) ** BigInt(number)).toString()
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -216,7 +227,7 @@ class bigInteger {
      * @returns {string} The current value as a string
      */
     Return(radix) {
-        const result = radix?new converter(this.#result.toString(),'10').toCustomBase(String(radix)):this.#result.toString()
+        const result = radix ? new converter(this.#result.toString(), '10').toCustomBase(String(radix)) : this.#result.toString()
         return result
     }
     /**
@@ -240,8 +251,8 @@ class bigInteger {
      * @method SetBigInteger Set the current value with the number you pass as a parameter
      * @returns {bigInteger}
      */
-    SetBigInteger(number,radix) {
-        const basenumber=radix? new converter(number,String(radix)).toDecimal():number
+    SetBigInteger(number, radix) {
+        const basenumber = radix ? new converter(number, String(radix)).toDecimal() : number
         if (String(basenumber).split('.')[1]) {
             throw new Error(`The number ${basenumber} its an invalid integer type, if you need to use a decimal number, use BigDecimal`)
         }
@@ -255,7 +266,7 @@ class bigInteger {
      * @returns {boolean}
      * @method gt Compare the current value of the "BigInteger" with a number received as a parameter to know if the current value is greater than this.
      */
-    gt(number){
+    gt(number) {
         return BigInt(this.#result) > BigInt(number)
     }
     /**
@@ -264,7 +275,7 @@ class bigInteger {
      * @returns {boolean}
      * @method lt Compare the current value of the "BigInteger" with a number received as a parameter to know if the current value is less than this.
      */
-    lt(number){
+    lt(number) {
         return BigInt(this.#result) < BigInt(number)
     }
     /**
@@ -273,7 +284,7 @@ class bigInteger {
      * @returns {boolean}
      * @method eq Compare the current value of the "BigInteger" with a number received as a parameter to know if the current value is the same as this.
      */
-    eq(number){
+    eq(number) {
         return BigInt(this.#result) === BigInt(number)
     }
     /**
@@ -282,7 +293,7 @@ class bigInteger {
      * @returns {boolean}
      * @method gte Compare the current value of the "BigInteger" with a number received as a parameter to know if the current value is greater than or equal to this.
      */
-    gte(number){
+    gte(number) {
         return BigInt(this.#result) >= BigInt(number)
     }
     /**
@@ -291,8 +302,30 @@ class bigInteger {
      * @returns {boolean}
      * @method lte compara The current value of the "BigInteger" with a number received as a parameter to know if the current value is less than or equal to this.
      */
-    lte(number){
+    lte(number) {
         return BigInt(this.#result) <= BigInt(number)
+    }
+    
+    /**
+     * 
+     * @param {string|number} number 
+     * @method getAbs Returns the absolute value of the current value
+     * @returns {string} The result of the operation as a string
+     */
+    static getAbs(number) {
+        let composition = getComposition(number)
+        return composition.decimals.some(digit => digit != 0) ? composition.complete : composition.ints.join('')
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method gaussSumOf Returns the result of the sum of gauss of the natural numbers between 1 and the number you pass as a parameter
+     * @returns {string} The result of the operation as a string
+     */
+    static gaussSumOf(number){
+        let plusOfFirstAndLast=new bigInteger(number).Addition('1')
+        let plusMultByGreatest=plusOfFirstAndLast.Multiplication(number).Division('2')
+        return plusMultByGreatest.Return()
     }
     /**
      * 
@@ -347,6 +380,100 @@ class bigInteger {
     /**
      * 
      * @param {string|number} number 
+     * @method isPrime Returns true if the current value is prime
+     * @returns {boolean}
+     */
+    static isPrime(number) {
+        let intPart=new bigInteger(getComposition(String(number)).ints.join(''))
+        if (intPart.lte(1)) {
+            return false; // Los números menores o iguales a 1 no son primos.
+        }
+
+        if (intPart.lte(3)) {
+            return true; // 2 y 3 son primos.
+        }
+
+        if (intPart.ReturnModule(2)==='0' || intPart.ReturnModule(3)==='0') {
+            return false; // Los múltiplos de 2 y 3 no son primos.
+        }
+
+        // Verifica divisibilidad desde 5 en adelante.
+        for (let i = new bigInteger(5); bigInteger.lessOrEqualThan(i.ReturnMultiplication(i.Return()),intPart.Return()); i.Addition(6)) {
+            if (intPart.ReturnModule(i.Return()) == 0 || intPart.ReturnModule(i.ReturnAddition(2)) == 0) {
+                return false; // Si es divisible por i o i + 2, no es primo.
+            }
+        }
+
+        return true;
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isComposite Returns true if the current value is composite
+     * @returns {boolean}
+     */
+    static isComposite(number){
+        return !bigInteger.isPrime(number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isEven Returns true if the current value is even
+     * @returns {boolean}
+     */
+    static isEven(number){
+        let intPart=new bigInteger(getComposition(String(number)).ints.join(''))
+        return intPart.ReturnModule(2)==='0'
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isOdd Returns true if the current value is odd
+     * @returns {boolean}
+     */
+    static isOdd(number){
+        return !bigInteger.isEven(number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isZero Returns true if the current value is equals to zero
+     * @returns {boolean}
+     */
+    static isZero(number){
+        let composition=getComposition(String(number))
+        if (composition.decimals.join('')==='0') {
+            if (composition.ints.every(digit=>digit==='0')) {
+                return true
+            }else return false
+        }else if (composition.ints.every(digit=>dig==='0')) {
+            if (composition.decimals.every(digit=>digit==='0')) {
+                return true
+            }else return false
+        }
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isNegative Returns true if the current value is negative
+     * @returns {boolean}
+     */
+    static isNegative(number){
+        let sign=getComposition(String(number)).sign
+        return sign==='-'
+    }
+    /**
+     * 
+     * @param {string|number} number 
+     * @method isPositive Returns true if the current value is positive
+     * @returns {boolean}
+     */
+    static isPositive(number){
+        return !bigDecimal.isNegative(number)
+    }
+    /**
+     * 
+     * @param {string|number} number 
      * @returns {boolean}
      * @method isNaNInt It detects if a number is not a valid integer, that is, with a decimal point or a strange character equivalent to the NAN value.
      */
@@ -359,8 +486,8 @@ class bigInteger {
      * @returns {boolean}
      * @method isSafeInteger Detects if a number is an integer between the safe range of JavaScript for integers, starting from the smallest safe to the largest.
      */
-    static isSafeInteger(number){
-        return this.greaterOrEqualThan(number,Number.MIN_SAFE_INTEGER)&&this.lessOrEqualThan(number,Number.MAX_SAFE_INTEGER)
+    static isSafeInteger(number) {
+        return this.greaterOrEqualThan(number, Number.MIN_SAFE_INTEGER) && this.lessOrEqualThan(number, Number.MAX_SAFE_INTEGER)
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -368,8 +495,8 @@ class bigInteger {
      * @param {string|number} radix The base of the number 
      * @returns 
      */
-    static baseToDecimal(number,radix){
-        return new converter(number,String(radix)).toDecimal()
+    static baseToDecimal(number, radix) {
+        return new converter(number, String(radix)).toDecimal()
     }
     /**
      * @see https://github.com/JossDev-Morales/number-converter.io#readme Documentation for conversions
@@ -377,8 +504,8 @@ class bigInteger {
      * @param {string|number} toRadix The base to convert the decimal number
      * @returns 
      */
-    static decimalToBase(decimal,toRadix){
-        return new converter(decimal,'10').toCustomBase(String(toRadix))
+    static decimalToBase(decimal, toRadix) {
+        return new converter(decimal, '10').toCustomBase(String(toRadix))
     }
 }
 module.exports = bigInteger
